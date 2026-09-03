@@ -1,0 +1,98 @@
+/home/heqi/miniconda3/envs/torch_env/lib/python3.11/site-packages/timm/models/layers/__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+/mnt/c/Users/heqi/Desktop/wj/anomalib/src/anomalib/models/image/dinomaly/components/layers.py:22: FutureWarning: The anomalib.models.components.dinov2 package is deprecated and will be removed in a future release. Please use the timm-based feature extractor instead: anomalib.models.components.feature_extractors.TimmFeatureExtractor
+  from anomalib.models.components.dinov2.layers import Attention, DropPath, LayerScale, MemEffAttention
+/home/heqi/miniconda3/envs/torch_env/lib/python3.11/site-packages/torch/cuda/__init__.py:1112: UserWarning: Can't initialize NVML
+  raw_cnt = _raw_device_count_nvml()
+/home/heqi/miniconda3/envs/torch_env/lib/python3.11/site-packages/lightning/pytorch/utilities/parsing.py:213: Attribute 'pre_processor' is an instance of `nn.Module` and is already saved during checkpointing. It is recommended to ignore them using `self.save_hyperparameters(ignore=['pre_processor'])`.
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+/home/heqi/miniconda3/envs/torch_env/lib/python3.11/site-packages/torch/cuda/__init__.py:1112: UserWarning: Can't initialize NVML
+  raw_cnt = _raw_device_count_nvml()
+GPU available: True (cuda), used: True
+TPU available: False, using: 0 TPU cores
+💡 Tip: For seamless cloud logging and experiment tracking, try installing [litlogger](https://pypi.org/project/litlogger/) to enable LitLogger, which logs metrics and artifacts automatically to the Lightning Experiments platform.
+You are using a CUDA device ('NVIDIA GeForce RTX 3090') that has Tensor Cores. To properly utilize them, you should set `torch.set_float32_matmul_precision('medium' | 'high')` which will trade-off precision for performance. For more details, read https://pytorch.org/docs/stable/generated/torch.set_float32_matmul_precision.html#torch.set_float32_matmul_precision
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+[提示] test 集已整理好: normal=243, abnormal=655
+
+============================================================
+加载数据集...
+  训练 batch size: 8
+  图片大小: (392, 392)
+  验证集: 从训练集分 10%
+============================================================
+
+创建 Dinomaly 模型...
+  编码器: vit_base_patch14_reg4_dinov2
+  瓶颈 dropout: 0.2
+  解码器层数: 8
+
+创建训练引擎...
+  GPU 数量: 1
+  最大步数: 5000
+  结果目录: ./results/casia_fasd_dinomaly
+
+============================================================
+开始训练...
+============================================================
+┏━━━┳━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━┳━━━━━━━┳━━━━━━━┓
+┃   ┃ Name              ┃ Type          ┃ Params ┃ Mode  ┃ FLOPs ┃
+┡━━━╇━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━╇━━━━━━━╇━━━━━━━┩
+│ 0 │ pre_processor     │ PreProcessor  │      0 │ train │     0 │
+│ 1 │ post_processor    │ PostProcessor │      0 │ train │     0 │
+│ 2 │ evaluator         │ Evaluator     │      0 │ train │     0 │
+│ 3 │ model             │ DinomalyModel │  147 M │ train │     0 │
+│ 4 │ trainable_modules │ ModuleList    │ 61.4 M │ train │     0 │
+└───┴───────────────────┴───────────────┴────────┴───────┴───────┘
+Trainable params: 61.4 M                                                        
+Non-trainable params: 86.6 M                                                    
+Total params: 147 M                                                             
+Total estimated model params size (MB): 591.891                                 
+Modules in train mode: 415                                                      
+Modules in eval mode: 0                                                         
+Total FLOPs: 0                                                                  
+/home/heqi/miniconda3/envs/torch_env/lib/python3.11/site-packages/lightning/pytorch/utilities/_pytree.py:21: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
+/home/heqi/miniconda3/envs/torch_env/lib/python3.11/site-packages/lightning/pytorch/utilities/data.py:79: Trying to infer the `batch_size` from an ambiguous collection. The batch size we found is 3. To avoid any miscalculations, use `self.log(..., batch_size=batch_size)`.
+The validation set does not contain any anomalous images. As a result, the adaptive threshold will take the value of the highest anomaly score observed in the normal validation images, which may lead to poor predictions. For a more reliable adaptive threshold computation, please add some anomalous images to the validation set.
+The validation set does not contain any anomalous images. As a result, the adaptive threshold will take the value of the highest anomaly score observed in the normal validation images, which may lead to poor predictions. For a more reliable adaptive threshold computation, please add some anomalous images to the validation set.
+The validation set does not contain any anomalous images. As a result, the adaptive threshold will take the value of the highest anomaly score observed in the normal validation images, which may lead to poor predictions. For a more reliable adaptive threshold computation, please add some anomalous images to the validation set.
+The validation set does not contain any anomalous images. As a result, the adaptive threshold will take the value of the highest anomaly score observed in the normal validation images, which may lead to poor predictions. For a more reliable adaptive threshold computation, please add some anomalous images to the validation set.
+The validation set does not contain any anomalous images. As a result, the adaptive threshold will take the value of the highest anomaly score observed in the normal validation images, which may lead to poor predictions. For a more reliable adaptive threshold computation, please add some anomalous images to the validation set.
+The validation set does not contain any anomalous images. As a result, the adaptive threshold will take the value of the highest anomaly score observed in the normal validation images, which may lead to poor predictions. For a more reliable adaptive threshold computation, please add some anomalous images to the validation set.
+The validation set does not contain any anomalous images. As a result, the adaptive threshold will take the value of the highest anomaly score observed in the normal validation images, which may lead to poor predictions. For a more reliable adaptive threshold computation, please add some anomalous images to the validation set.
+The validation set does not contain any anomalous images. As a result, the adaptive threshold will take the value of the highest anomaly score observed in the normal validation images, which may lead to poor predictions. For a more reliable adaptive threshold computation, please add some anomalous images to the validation set.
+`Trainer.fit` stopped: `max_steps=5000` reached.
+Epoch 8/8  ━━━━━━━━━━━━━━━━ 104/104 0:00:31 • 0:00:00 3.30it/s train_loss_step: 
+                                                               0.074            
+                                                               train_loss_epoch:
+                                                               0.077            
+The following callbacks returned in `LightningModule.configure_callbacks` will override existing callbacks passed to Trainer: Evaluator, ImageVisualizer, PostProcessor, PreProcessor
+LOCAL_RANK: 0 - CUDA_VISIBLE_DEVICES: [0]
+
+============================================================
+开始测试...
+============================================================
+/home/heqi/miniconda3/envs/torch_env/lib/python3.11/site-packages/torchmetrics/utilities/prints.py:43: UserWarning: The ``compute`` method of metric AUROC was called before the ``update`` method which may lead to errors, as metric states have not yet been updated.
+  warnings.warn(*args, **kwargs)
+/home/heqi/miniconda3/envs/torch_env/lib/python3.11/site-packages/torchmetrics/utilities/prints.py:43: UserWarning: The ``compute`` method of metric F1Score was called before the ``update`` method which may lead to errors, as metric states have not yet been updated.
+  warnings.warn(*args, **kwargs)
+┏━━━━━━━━━━━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━━━━━━━━━━━━━┓
+┃        Test metric        ┃       DataLoader 0        ┃
+┡━━━━━━━━━━━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━━━━━━━━━━━━━┩
+│        image_AUROC        │    0.4931612014770508     │
+│       image_F1Score       │    0.8435286283493042     │
+└───────────────────────────┴───────────────────────────┘
+Testing ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ 113/113 0:00:41 • 0:00:00 2.72it/s 
+
+============================================================
+测试结果：
+============================================================
+
+  测试集 1:
+    image_AUROC: 0.4931612014770508
+    image_F1Score: 0.8435286283493042
+
+============================================================
+全部完成！
+结果保存在: ./results/casia_fasd_dinomaly
+============================================================

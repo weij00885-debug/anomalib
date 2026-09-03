@@ -25,12 +25,14 @@ from anomalib.models.components.feature_extractors import TimmFeatureExtractor
 from anomalib.models.image.dinomaly.components import CosineHardMiningLoss, DinomalyMLP, LinearAttention
 
 # Encoder architecture configurations for DINOv2 models.
-# The target layers are the
+# Each entry stores the embed dimension, number of attention heads, and the
+# 8 block outputs used as reconstruction targets.
 DINO_ARCHITECTURES = {
     "small": {"embed_dim": 384, "num_heads": 6, "target_layers": [2, 3, 4, 5, 6, 7, 8, 9]},
     "base": {"embed_dim": 768, "num_heads": 12, "target_layers": [2, 3, 4, 5, 6, 7, 8, 9]},
     "large": {"embed_dim": 1024, "num_heads": 16, "target_layers": [4, 6, 8, 10, 12, 14, 16, 18]},
     "huge": {"embed_dim": 1280, "num_heads": 20, "target_layers": [3, 9, 12, 15, 18, 21, 24, 27]},
+    "giant": {"embed_dim": 1536, "num_heads": 24, "target_layers": [6, 10, 14, 18, 22, 26, 30, 34]},
 }
 
 # Default fusion layer configurations
@@ -130,10 +132,8 @@ class DinomalyModel(nn.Module):
         else:
             self.target_layers = target_layers
 
-        if fuse_layer_encoder is None:
-            self.fuse_layer_encoder = DEFAULT_FUSE_LAYERS
-        if fuse_layer_decoder is None:
-            self.fuse_layer_decoder = DEFAULT_FUSE_LAYERS
+        self.fuse_layer_encoder = fuse_layer_encoder if fuse_layer_encoder is not None else DEFAULT_FUSE_LAYERS
+        self.fuse_layer_decoder = fuse_layer_decoder if fuse_layer_decoder is not None else DEFAULT_FUSE_LAYERS
 
         self.encoder = TimmFeatureExtractor(
             backbone=encoder_name,
