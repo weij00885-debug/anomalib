@@ -61,21 +61,16 @@ from torchvision.transforms.v2 import CenterCrop, Compose, Normalize, Resize
 from anomalib.data import Folder
 from anomalib.engine import Engine
 from anomalib.models import Dinomaly
-from anomalib.models.image.dinomaly.torch_model import DINO_ARCHITECTURES
 from anomalib.pre_processing import PreProcessor
 
 # Official Dinomaly hyperparameters used as defaults (see examples/configs/model/dinomaly.yaml).
-DEFAULT_ENCODER = "vit_base_patch14_reg4_dinov2"
-# Fallback only used when the encoder name is not in the Dinomaly arch table.
-DEFAULT_TARGET_LAYERS = [2, 3, 4, 5, 6, 7, 8, 9]
+DEFAULT_ENCODER = "vit_huge_patch14_reg4_dinov2"
+DEFAULT_TARGET_LAYERS = [3, 9, 12, 15, 18, 21, 24, 27]
 DEFAULT_BOTTLENECK_DROPOUT = 0.2
 DEFAULT_DECODER_DEPTH = 8
 DEFAULT_MAX_STEPS = 5000
 DEFAULT_GRADIENT_CLIP = 0.1
-# Early stopping is off by default: with batch 1 the epoch is longer than
-# max_steps, so image_AUROC would never be logged and the callback would crash.
-# Enable it with --early-stop-patience N together with --val-check-interval M.
-DEFAULT_EARLY_STOP_PATIENCE = 0
+DEFAULT_EARLY_STOP_PATIENCE = 20
 
 # Default face dataset (organized CASIA-FASD) used in this workspace.
 DEFAULT_ROOT = "/mnt/c/Users/heqi/Desktop/CASIA-FASD/casia-fasd"
@@ -158,25 +153,6 @@ def validate_groups(groups: list[list[int]], n_layers: int, label: str) -> None:
                 raise ValueError(msg)
 
 
-def resolve_default_target_layers(encoder_name: str) -> list[int]:
-    """Pick the arch-specific default target layers for a DINOv2 encoder name.
-
-    The Dinomaly model already maps encoder names (e.g. ``vit_giant_patch14_reg4_dinov2``)
-    to an architecture entry; mirror that mapping here so the CLI behaves the same
-    way when ``--target-layers`` is omitted.
-
-    Args:
-        encoder_name (str): timm backbone name containing a Dinomaly arch keyword.
-
-    Returns:
-        list[int]: The 8 default block indices for that architecture.
-    """
-    for arch_name, arch_config in DINO_ARCHITECTURES.items():
-        if arch_name in encoder_name:
-            return list(arch_config["target_layers"])
-    return list(DEFAULT_TARGET_LAYERS)
-
-
 def build_pre_processor(image_size: int, crop_size: int | None) -> PreProcessor:
     """Build the Dinomaly pre-processor for face images.
 
@@ -223,8 +199,8 @@ def parse_args() -> argparse.Namespace:
     data.add_argument("--abnormal-dir", type=str, default="test/abnormal", help="Anomalous test images.")
     data.add_argument("--normal-test-dir", type=str, default="test/normal", help="Normal test images.")
     data.add_argument("--mask-dir", type=str, default=None, help="Optional pixel-level mask dir.")
-    data.add_argument("--train-batch-size", type=int, default=8)
-    data.add_argument("--eval-batch-size", type=int, default=8)
+    data.add_argument("--train-batch-size", type=int, default=2)
+    data.add_argument("--eval-batch-size", type=int, default=2)
     data.add_argument("--num-workers", type=int, default=4)
     data.add_argument(
         "--val-split-mode",
@@ -282,12 +258,6 @@ def parse_args() -> argparse.Namespace:
     train.add_argument("--max-epochs", type=int, default=None, help="Alternative stop criterion.")
     train.add_argument("--gradient-clip-val", type=float, default=DEFAULT_GRADIENT_CLIP)
     train.add_argument("--early-stop-patience", type=int, default=DEFAULT_EARLY_STOP_PATIENCE)
-    train.add_argument(
-        "--val-check-interval",
-        type=int,
-        default=None,
-        help="Run validation every N training steps (required when using --early-stop-patience).",
-    )
     train.add_argument("--accelerator", type=str, default="gpu", choices=["auto", "gpu", "cpu", "xpu"])
     train.add_argument("--devices", type=int, default=1)
     train.add_argument("--results-dir", type=str, default=None)
@@ -296,7 +266,7 @@ def parse_args() -> argparse.Namespace:
 
     args = parser.parse_args()
     if args.target_layers is None:
-        args.target_layers = resolve_default_target_layers(args.encoder_name)
+        args.target_layers = list(DEFAULT_TARGET_LAYERS)
 
     if args.remove_class_token and args.use_context_recentering:
         parser.error("--remove-class-token and --use-context-recentering are mutually exclusive.")
@@ -306,8 +276,6 @@ def parse_args() -> argparse.Namespace:
         parser.error("--decoder-depth must be greater than 1.")
     if args.max_epochs is None and args.max_steps <= 0:
         parser.error("Provide either --max-steps (>0) or --max-epochs (>0).")
-    if args.early_stop_patience > 0 and args.val_check_interval is None:
-        parser.error("--early-stop-patience > 0 requires --val-check-interval (e.g. --val-check-interval 200).")
     return args
 
 
@@ -392,7 +360,7 @@ def main() -> None:
     # 4. Engine + callbacks
     # ------------------------------------------------------------------
     callbacks = []
-    if args.early_stop_patience > 0 and args.val_split_mode != "none":
+    if args.early_stop_patience > 0 and val_split_mode != "none":
         callbacks.append(
             EarlyStopping(
                 monitor="image_AUROC",
@@ -411,8 +379,6 @@ def main() -> None:
         engine_kwargs["max_steps"] = args.max_steps
     if args.max_epochs is not None:
         engine_kwargs["max_epochs"] = args.max_epochs
-    if args.val_check_interval is not None:
-        engine_kwargs["val_check_interval"] = args.val_check_interval
     if args.results_dir is not None:
         engine_kwargs["default_root_dir"] = args.results_dir
 
@@ -441,7 +407,7 @@ def main() -> None:
     print(f"  image / crop       : {args.image_size} / {args.crop_size or 'none'}")
     print(f"  dataset root       : {root}")
     print(f"  batch (train/eval) : {args.train_batch_size} / {args.eval_batch_size}")
-    print(f"  val split          : {args.val_split_mode} (ratio {args.val_split_ratio})")
+    print(f"  val split          : {val_split_mode} (ratio {val_split_ratio})")
     print(f"  max steps / epochs : {args.max_steps} / {args.max_epochs}")
     print("=" * 72)
 
