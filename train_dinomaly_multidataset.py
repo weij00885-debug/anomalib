@@ -1,4 +1,19 @@
-"""Train Dinomaly on a face (anti-spoofing) dataset with tunable feature extraction.
+"""Train anomalib Dinomaly on the wj/data rgb face anti-spoofing datasets.
+
+Adapted from train_dinomaly_face.py. Each dataset lives at
+<data-root>/<dataset>/<mode>/ with already-labeled {normal, abnormal} folders.
+The mixed 	est folder is NOT used (labels are unreliable for some datasets):
+test-normal images are carved out of 
+ormal via --test-split-ratio, and
+abnormal are used as test anomalies.
+
+Easiest knobs:
+  --dataset      which dataset       (default CASIA_mtcnn_colors)
+  --max-steps    training steps      (default 5000)
+  --devices      number of GPUs      (default 1)
+  --accelerator  gpu / cpu           (default gpu)
+
+NOTE: you run inside WSL, so a Windows path C:/Users/... is /mnt/c/Users/...
 
 This script is a thin, experiment-friendly wrapper around the anomalib
 ``Dinomaly`` model + ``Folder`` datamodule.  It exposes the two knobs that
@@ -56,7 +71,9 @@ from pathlib import Path
 
 import lightning.pytorch as pl
 import torch
+from torchmetrics import Metric
 from torchmetrics.classification import BinaryAccuracy, BinaryConfusionMatrix, BinaryPrecision, BinaryRecall
+from torchmetrics.utilities.data import dim_zero_cat
 from lightning.pytorch.callbacks import EarlyStopping
 from torchvision.transforms.v2 import CenterCrop, Compose, Normalize, Resize
 
@@ -64,6 +81,7 @@ from anomalib.data import Folder
 from anomalib.engine import Engine
 from anomalib.models import Dinomaly
 from anomalib.pre_processing import PreProcessor
+from anomalib.post_processing import PostProcessor
 from anomalib.metrics import AUROC, AnomalibMetric, Evaluator, F1Score
 
 # Official Dinomaly hyperparameters used as defaults (see examples/configs/model/dinomaly.yaml).
@@ -76,14 +94,17 @@ DEFAULT_GRADIENT_CLIP = 0.1
 DEFAULT_EARLY_STOP_PATIENCE = 20
 
 # Default face dataset (organized OULU-NPU) used in this workspace.
-DEFAULT_ROOT = "/mnt/d/BaiduNetdiskDownload/OULU-NPU_organized"
+DEFAULT_ROOT = "/mnt/c/Users/heqi/Desktop/wj/data"  # WSL path of C:\Users\heqi\Desktop\wj\data
+DEFAULT_DATASET = "CASIA_mtcnn_colors"
+DEFAULT_MODE = "rgb"
 
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
 
 
 def build_groups(mode: str, n: int) -> list[list[int]]:
-    """Build a list-of-lists grouping over ``n`` consecutive feature indices.
+    """Build a list-of-lists grouping over `
+`` consecutive feature indices.
 
     The modes cover the interesting comparison strategies for Dinomaly:
 
@@ -102,7 +123,8 @@ def build_groups(mode: str, n: int) -> list[list[int]]:
         list[list[int]]: Group indices, e.g. ``[[0, 1, 2, 3], [4, 5, 6, 7]]``.
 
     Raises:
-        ValueError: If the mode is unknown or ``n`` is too small for it.
+        ValueError: If the mode is unknown or `
+`` is too small for it.
     """
     if n < 1:
         msg = f"Cannot build groups over {n} layers."
@@ -138,7 +160,8 @@ def validate_groups(groups: list[list[int]], n_layers: int, label: str) -> None:
         label (str): Side being validated, for error messages ("encoder"/"decoder").
 
     Raises:
-        ValueError: If the grouping is not usable with ``n_layers`` features.
+        ValueError: If the grouping is not usable with `
+_layers`` features.
     """
     if not groups:
         msg = f"{label} grouping must contain at least one group."
@@ -236,6 +259,62 @@ def build_evaluator() -> Evaluator:
     ]
     return Evaluator(val_metrics=val_metrics, test_metrics=test_metrics)
 
+class _HTERAdaptiveThreshold(Metric):
+    """Adaptive threshold that minimizes HTER = (FPR + FNR) / 2 on validation data."""
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.add_state("preds", default=[], dist_reduce_fx="cat")
+        self.add_state("target", default=[], dist_reduce_fx="cat")
+
+    def update(self, preds: torch.Tensor, target: torch.Tensor) -> None:
+        preds = preds if preds.ndim == 1 else preds.flatten()
+        target = target if target.ndim == 1 else target.flatten()
+        self.preds.append(preds)
+        self.target.append(target)
+
+    def compute(self) -> torch.Tensor:
+        preds = dim_zero_cat(self.preds)
+        target = dim_zero_cat(self.target).long()
+        n_pos = (target == 1).sum().item()
+        n_neg = (target == 0).sum().item()
+        if n_pos == 0:
+            return preds.max().detach()
+        if n_neg == 0:
+            return preds.min().detach()
+
+        order = torch.argsort(preds)
+        s = preds[order]
+        t = target[order]
+        is_pos = (t == 1).to(preds.dtype)
+        is_neg = (t == 0).to(preds.dtype)
+        # cum_*[i] = count among the first i (sorted) samples
+        cum_pos = torch.cat([torch.zeros(1, device=preds.device), torch.cumsum(is_pos, 0)])
+        cum_neg = torch.cat([torch.zeros(1, device=preds.device), torch.cumsum(is_neg, 0)])
+
+        candidates = torch.unique(s)
+        le = torch.searchsorted(s, candidates, right=True)  # number of scores <= candidate
+        pos_le = cum_pos[le].float()
+        neg_le = cum_neg[le].float()
+        fpr = (n_neg - neg_le) / n_neg
+        fnr = pos_le / n_pos
+        hter = (fpr + fnr) / 2.0
+        best = hter == hter.min()
+        arg = best.nonzero().squeeze(1).max().item()
+        return candidates[arg].detach()
+
+
+class HTERAdaptiveThreshold(AnomalibMetric, _HTERAdaptiveThreshold):  # type: ignore[misc]
+    """AnomalibMetric wrapper for the HTER-minimizing threshold."""
+
+
+class HTERPostProcessor(PostProcessor):
+    """PostProcessor that selects the threshold minimizing HTER on validation."""
+
+    def __init__(self, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self._image_threshold_metric = HTERAdaptiveThreshold(fields=["pred_score", "gt_label"], strict=False)
+
 def parse_args() -> argparse.Namespace:
     """Parse and validate command-line arguments."""
     parser = argparse.ArgumentParser(
@@ -243,24 +322,26 @@ def parse_args() -> argparse.Namespace:
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
-    data = parser.add_argument_group("data (defaults match organized OULU-NPU)")
-    data.add_argument("--root", type=str, default=DEFAULT_ROOT, help="Dataset root directory.")
-    data.add_argument("--name", type=str, default="oulu_npu", help="Datamodule display name.")
-    data.add_argument("--normal-dir", type=str, default="train/normal", help="Normal training images.")
-    data.add_argument("--abnormal-dir", type=str, default="test/abnormal", help="Anomalous test images.")
-    data.add_argument("--normal-test-dir", type=str, default="test/normal", help="Normal test images.")
-    data.add_argument("--mask-dir", type=str, default=None, help="Optional pixel-level mask dir.")
+    data = parser.add_argument_group("data (wj/data/<dataset>/<mode>)")
+    data.add_argument("--root", type=str, default=DEFAULT_ROOT, help="Directory holding the <dataset> folders.")
+    data.add_argument(
+        "--dataset",
+        type=str,
+        default=DEFAULT_DATASET,
+        choices=["CASIA_mtcnn_colors", "LCC_colors", "NUAA_mtcnn_colors", "REPLAY_mtcnn_colors"],
+        help="Which dataset to train on.",
+    )
+    data.add_argument("--mode", type=str, default=DEFAULT_MODE, help="Color-mode subfolder (rgb/hsv/lab/ycbcr/yuv).")
     data.add_argument("--train-batch-size", type=int, default=2)
     data.add_argument("--eval-batch-size", type=int, default=2)
     data.add_argument("--num-workers", type=int, default=4)
     data.add_argument(
-        "--val-split-mode",
-        type=str,
-        default="from_test",
-        choices=["from_test", "from_train", "none"],
-        help="Where the validation split comes from. 'from_test' keeps a meaningful AUROC.",
+        "--test-split-ratio",
+        type=float,
+        default=0.2,
+        help="Fraction of normal images carved out as test-normal (test folder is not used; labels unreliable).",
     )
-    data.add_argument("--val-split-ratio", type=float, default=0.2, help="Fraction used for validation.")
+    data.add_argument("--val-split-ratio", type=float, default=0.2, help="Fraction of test set used as validation.")
 
     model = parser.add_argument_group("model / feature-extraction knobs")
     model.add_argument("--encoder-name", type=str, default=DEFAULT_ENCODER)
@@ -336,15 +417,14 @@ def main() -> None:
     pl.seed_everything(args.seed)
 
     root = Path(args.root)
-    normal_train = root / args.normal_dir
+    dataset_dir = root / args.dataset / args.mode
+    normal_train = dataset_dir / "normal"
+    abnormal_dir = dataset_dir / "abnormal"
     if not normal_train.is_dir():
-        msg = (
-            f"Normal training dir not found: {normal_train}. "
-            f"Point --root / --normal-dir at your face dataset (train/normal layout)."
-        )
+        msg = f"Normal training dir not found: {normal_train}. Check --root / --dataset / --mode."
         raise FileNotFoundError(msg)
-    if not (root / args.abnormal_dir).is_dir() and not (root / args.normal_test_dir).is_dir():
-        msg = f"Neither abnormal nor normal test dir found under {root}; anomaly evaluation needs test images."
+    if not abnormal_dir.is_dir():
+        msg = f"Abnormal dir not found: {abnormal_dir}. Anomaly evaluation needs abnormal images."
         raise FileNotFoundError(msg)
 
     # ------------------------------------------------------------------
@@ -376,16 +456,18 @@ def main() -> None:
     # 2. Data
     # ------------------------------------------------------------------
     datamodule = Folder(
-        name=args.name,
-        root=str(root),
-        normal_dir=args.normal_dir,
-        abnormal_dir=args.abnormal_dir,
-        normal_test_dir=args.normal_test_dir,
-        mask_dir=args.mask_dir,
+        name=f"{args.dataset}_{args.mode}",
+        root=str(dataset_dir),
+        normal_dir="normal",
+        abnormal_dir="abnormal",
+        normal_test_dir=None,
+        mask_dir=None,
         train_batch_size=args.train_batch_size,
         eval_batch_size=args.eval_batch_size,
         num_workers=args.num_workers,
-        val_split_mode=args.val_split_mode,
+        test_split_mode="from_dir",
+        test_split_ratio=args.test_split_ratio,
+        val_split_mode="from_test",
         val_split_ratio=args.val_split_ratio,
         seed=args.seed,
     )
@@ -405,6 +487,7 @@ def main() -> None:
         use_context_recentering=args.use_context_recentering,
         precision=args.model_precision,
         pre_processor=pre_processor,
+        post_processor=HTERPostProcessor(),
         evaluator=build_evaluator(),
     )
 
@@ -412,7 +495,7 @@ def main() -> None:
     # 4. Engine + callbacks
     # ------------------------------------------------------------------
     callbacks = []
-    if args.early_stop_patience > 0 and args.val_split_mode != "none":
+    if args.early_stop_patience > 0:
         callbacks.append(
             EarlyStopping(
                 monitor="image_AUROC",
@@ -457,9 +540,9 @@ def main() -> None:
     print(f"  bottleneck dropout : {args.bottleneck_dropout}")
     print(f"  decoder depth      : {args.decoder_depth}")
     print(f"  image / crop       : {args.image_size} / {args.crop_size or 'none'}")
-    print(f"  dataset root       : {root}")
+    print(f"  dataset            : {args.dataset}/{args.mode} ({dataset_dir})")
     print(f"  batch (train/eval) : {args.train_batch_size} / {args.eval_batch_size}")
-    print(f"  val split          : {args.val_split_mode} (ratio {args.val_split_ratio})")
+    print(f"  val split          : from_test (ratio {args.val_split_ratio})")
     print(f"  max steps / epochs : {args.max_steps} / {args.max_epochs}")
     print("=" * 72)
 
