@@ -1,4 +1,4 @@
-﻿"""Train Dinomaly on the REPLAY_mtcnn_colors face anti-spoofing dataset.
+﻿"""Train Dinomaly on REPLAY_mtcnn_colors with DINOv2 feature dim 1024 (vit_large).
 
 This is a Replay-Attack-specific wrapper around the anomalib ``Dinomaly`` model and
 ``Folder`` datamodule, adapted from ``train_dinomaly_face.py``.
@@ -15,13 +15,13 @@ are carved out from ``<mode>/normal`` via ``--test-split-ratio``, and all
 Examples::
 
     # Default RGB Replay-Attack run.
-    python train_dinomaly_replay.py
+    python train_dinomaly_replay_dim1024.py
 
     # Run another color representation.
-    python train_dinomaly_replay.py --mode hsv
+    python train_dinomaly_replay_dim1024.py --mode hsv
 
     # Cheaper encoder + bigger batch on a GPU-limited machine.
-    python train_dinomaly_replay.py --encoder-name vit_small_patch14_reg4_dinov2 --train-batch-size 8
+    python train_dinomaly_replay_dim1024.py --encoder-name vit_small_patch14_reg4_dinov2 --train-batch-size 8
 """
 
 from __future__ import annotations
@@ -45,8 +45,8 @@ from anomalib.models import Dinomaly
 from anomalib.post_processing import PostProcessor
 from anomalib.pre_processing import PreProcessor
 
-DEFAULT_ENCODER = "vit_giant_patch14_reg4_dinov2"
-DEFAULT_TARGET_LAYERS = [6, 10, 14, 18, 22, 26, 30, 34]
+DEFAULT_ENCODER = "vit_large_patch14_reg4_dinov2"
+DEFAULT_TARGET_LAYERS = [4, 6, 8, 10, 12, 14, 16, 18]
 DEFAULT_BOTTLENECK_DROPOUT = 0.2
 DEFAULT_DECODER_DEPTH = 8
 DEFAULT_MAX_STEPS = 5000
@@ -500,6 +500,9 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+
+
 
 
 

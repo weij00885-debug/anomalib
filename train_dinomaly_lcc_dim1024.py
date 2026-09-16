@@ -1,12 +1,12 @@
-﻿"""Train Dinomaly on the REPLAY_mtcnn_colors face anti-spoofing dataset.
+﻿"""Train Dinomaly on the LCC_colors face anti-spoofing dataset with feature dim 1024 (vit_large).
 
-This is a Replay-Attack-specific wrapper around the anomalib ``Dinomaly`` model and
+This is a LCC-specific wrapper around the anomalib ``Dinomaly`` model and
 ``Folder`` datamodule, adapted from ``train_dinomaly_face.py``.
 
 Expected dataset layout::
 
-    <root>/REPLAY_mtcnn_colors/<mode>/normal      # live/normal faces -> training
-    <root>/REPLAY_mtcnn_colors/<mode>/abnormal    # spoof/abnormal images -> test anomalies
+    <root>/LCC_colors/<mode>/normal      # live/normal faces -> training
+    <root>/LCC_colors/<mode>/abnormal    # spoof/abnormal images -> test anomalies
 
 The flat ``<mode>/test`` directory is intentionally not used. Normal test images
 are carved out from ``<mode>/normal`` via ``--test-split-ratio``, and all
@@ -14,14 +14,14 @@ are carved out from ``<mode>/normal`` via ``--test-split-ratio``, and all
 
 Examples::
 
-    # Default RGB Replay-Attack run.
-    python train_dinomaly_replay.py
+    # Default RGB NUAA run.
+    python train_dinomaly_lcc_dim1024.py
 
     # Run another color representation.
-    python train_dinomaly_replay.py --mode hsv
+    python train_dinomaly_lcc_dim1024.py --mode hsv
 
     # Cheaper encoder + bigger batch on a GPU-limited machine.
-    python train_dinomaly_replay.py --encoder-name vit_small_patch14_reg4_dinov2 --train-batch-size 8
+    python train_dinomaly_lcc_dim1024.py --encoder-name vit_small_patch14_reg4_dinov2 --train-batch-size 8
 """
 
 from __future__ import annotations
@@ -45,18 +45,18 @@ from anomalib.models import Dinomaly
 from anomalib.post_processing import PostProcessor
 from anomalib.pre_processing import PreProcessor
 
-DEFAULT_ENCODER = "vit_giant_patch14_reg4_dinov2"
-DEFAULT_TARGET_LAYERS = [6, 10, 14, 18, 22, 26, 30, 34]
+DEFAULT_ENCODER = "vit_large_patch14_reg4_dinov2"
+DEFAULT_TARGET_LAYERS = [4, 6, 8, 10, 12, 14, 16, 18]
 DEFAULT_BOTTLENECK_DROPOUT = 0.2
 DEFAULT_DECODER_DEPTH = 8
 DEFAULT_MAX_STEPS = 5000
 DEFAULT_GRADIENT_CLIP = 0.1
 DEFAULT_EARLY_STOP_PATIENCE = 20
 
-# WSL path of C:\Users\heqi\Desktop\wj\data\REPLAY_mtcnn_colors
+# Windows path of C:\Users\heqi\Desktop\wj\data\LCC_colors
 DEFAULT_ROOT = "/mnt/c/Users/heqi/Desktop/wj/data"
 DEFAULT_MODE = "rgb"
-DATASET_NAME = "REPLAY_mtcnn_colors"
+DATASET_NAME = "LCC_colors"
 
 IMAGENET_MEAN = [0.485, 0.456, 0.406]
 IMAGENET_STD = [0.229, 0.224, 0.225]
@@ -167,7 +167,7 @@ class HTER(AnomalibMetric, BinaryConfusionMatrix):
 
 
 def build_evaluator() -> Evaluator:
-    """Build the image-level metric set reported for Replay-Attack face anti-spoofing."""
+    """Build the image-level metric set reported for NUAA face anti-spoofing."""
     val_metrics = [AUROC(fields=["pred_score", "gt_label"], prefix="image_")]
     test_metrics = [
         AUROC(fields=["pred_score", "gt_label"], prefix="image_"),
@@ -242,18 +242,18 @@ class HTERPostProcessor(PostProcessor):
 def parse_args() -> argparse.Namespace:
     """Parse and validate command-line arguments."""
     parser = argparse.ArgumentParser(
-        description="Train anomalib Dinomaly on the Replay-Attack REPLAY_mtcnn_colors dataset.",
+        description="Train anomalib Dinomaly on the LCC dataset.",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
 
     data = parser.add_argument_group("data")
-    data.add_argument("--root", type=str, default=DEFAULT_ROOT, help="Directory holding the REPLAY_mtcnn_colors dataset.")
+    data.add_argument("--root", type=str, default=DEFAULT_ROOT, help="Directory holding the LCC_colors dataset.")
     data.add_argument(
         "--mode",
         type=str,
         default=DEFAULT_MODE,
         choices=["rgb", "hsv", "lab", "ycbcr", "yuv"],
-        help="Color-mode subfolder under REPLAY_mtcnn_colors.",
+        help="Color-mode subfolder under LCC_colors.",
     )
     data.add_argument("--train-batch-size", type=int, default=2)
     data.add_argument("--eval-batch-size", type=int, default=2)
@@ -339,7 +339,7 @@ def parse_args() -> argparse.Namespace:
 
 
 def main() -> None:
-    """Run the full fit + test pipeline for REPLAY_mtcnn_colors."""
+    """Run the full fit + test pipeline for LCC_colors."""
     args = parse_args()
     pl.seed_everything(args.seed)
 
@@ -348,10 +348,10 @@ def main() -> None:
     abnormal_dir = dataset_dir / "abnormal"
 
     if not normal_dir.is_dir():
-        msg = f"Normal training dir not found: {normal_dir}. Point --root at the directory holding REPLAY_mtcnn_colors."
+        msg = f"Normal training dir not found: {normal_dir}. Point --root at the directory holding LCC_colors."
         raise FileNotFoundError(msg)
     if not abnormal_dir.is_dir():
-        msg = f"Abnormal test dir not found: {abnormal_dir}. Expected REPLAY_mtcnn_colors/<mode>/abnormal."
+        msg = f"Abnormal test dir not found: {abnormal_dir}. Expected LCC_colors/<mode>/abnormal."
         raise FileNotFoundError(msg)
 
     # ------------------------------------------------------------------
@@ -457,7 +457,7 @@ def main() -> None:
         )
 
     print("=" * 72)
-    print("Dinomaly Replay-Attack training experiment")
+    print("Dinomaly LCC training experiment")
     print("=" * 72)
     print(f"  dataset            : {DATASET_NAME}/{args.mode} ({dataset_dir})")
     print(f"  encoder            : {args.encoder_name}")
@@ -500,8 +500,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-
-
 
