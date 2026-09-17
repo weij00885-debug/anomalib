@@ -22,7 +22,12 @@ from torch import nn
 from anomalib.data import InferenceBatch
 from anomalib.models.components import GaussianBlur2d
 from anomalib.models.components.feature_extractors import TimmFeatureExtractor
-from anomalib.models.image.dinomaly.components import CosineHardMiningLoss, DinomalyMLP, LinearAttention
+from anomalib.models.image.dinomaly.components import (
+    CosineHardMiningLoss,
+    DinomalyMLP,
+    LayerConditionalFusion,
+    LinearAttention,
+)
 
 # Encoder architecture configurations for DINOv2 models.
 # Each entry stores the embed dimension, number of attention heads, and the
@@ -112,6 +117,8 @@ class DinomalyModel(nn.Module):
         fuse_layer_decoder: list[list[int]] | None = None,
         remove_class_token: bool = False,
         use_context_recentering: bool = False,
+        use_lcf: bool = False,
+        lcf_dropout: float = 0.0,
     ) -> None:
         super().__init__()
 
@@ -193,6 +200,20 @@ class DinomalyModel(nn.Module):
 
         if not hasattr(self.encoder, "num_register_tokens"):
             self.encoder.num_register_tokens = 0
+
+        # --- LCF: drop-in replacement for _fuse_feature=mean() ---
+        self.use_lcf = use_lcf
+        if use_lcf:
+            # ``num_layers`` is determined dynamically by the input list length
+            # in ``LayerConditionalFusion.forward``; the same instance works
+            # for both the step-3 "fuse all N layers" call and the step-6
+            # "fuse per-group M layers" calls without any hint or warning.
+            self.lcf = LayerConditionalFusion(
+                embed_dim=embed_dim,
+                dropout=lcf_dropout,
+            )
+        else:
+            self.lcf = None
 
         # Initialize Gaussian blur for anomaly map smoothing
         self.gaussian_blur = GaussianBlur2d(
@@ -356,20 +377,25 @@ class DinomalyModel(nn.Module):
         anomaly_map = torch.cat(anomaly_map_list, dim=1).mean(dim=1, keepdim=True)
         return anomaly_map, anomaly_map_list
 
-    @staticmethod
-    def _fuse_feature(feat_list: list[torch.Tensor]) -> torch.Tensor:
-        """Fuse multiple feature tensors by averaging.
+    def _fuse_feature(self, feat_list: list[torch.Tensor]) -> torch.Tensor:
+        """Fuse multiple feature tensors, optionally via LCF attention.
 
-        Takes a list of feature tensors and computes their element-wise average
-        to create a fused representation.
+        When ``use_lcf=True`` at construction time, this delegates to
+        :class:`LayerConditionalFusion` so each patch token learns its own
+        per-layer weighting. Otherwise it falls back to the original
+        element-wise mean over the input list.
 
         Args:
             feat_list (list[torch.Tensor]): List of feature tensors to fuse.
+                When LCF is enabled, the list length can be any positive
+                integer (the per-layer attention weights are computed
+                dynamically over whatever layers are passed in).
 
         Returns:
-            torch.Tensor: Averaged feature tensor.
-
+            torch.Tensor: Fused feature tensor.
         """
+        if self.lcf is not None:
+            return self.lcf(feat_list)
         return torch.stack(feat_list, dim=1).mean(dim=1)
 
     @staticmethod

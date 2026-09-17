@@ -11,6 +11,7 @@ architecture including layers, utilities, and vision transformer implementations
 from .layers import Block, DinomalyMLP, LinearAttention, MemEffAttention
 
 # Training-related classes: Loss, Optimizer and scheduler
+from .lcf import LayerConditionalFusion
 from .loss import CosineHardMiningLoss
 from .optimizer import StableAdamW, WarmCosineScheduler
 
@@ -20,6 +21,8 @@ __all__ = [
     "DinomalyMLP",
     "LinearAttention",
     "MemEffAttention",
+    # LCF (Layer-Conditional Fusion) - Dinomaly fused-feature attention
+    "LayerConditionalFusion",
     # Utils
     "StableAdamW",
     "WarmCosineScheduler",

@@ -165,6 +165,8 @@ class Dinomaly(AnomalibModule):
         fuse_layer_decoder: list[list[int]] | None = None,
         remove_class_token: bool = False,
         use_context_recentering: bool = False,
+        use_lcf: bool = False,
+        lcf_dropout: float = 0.0,
         precision: str | PrecisionType = PrecisionType.FLOAT32,
         pre_processor: PreProcessor | bool = True,
         post_processor: PostProcessor | bool = True,
@@ -187,6 +189,8 @@ class Dinomaly(AnomalibModule):
             fuse_layer_decoder=fuse_layer_decoder,
             remove_class_token=remove_class_token,
             use_context_recentering=use_context_recentering,
+            use_lcf=use_lcf,
+            lcf_dropout=lcf_dropout,
         )
 
         if isinstance(precision, str):
@@ -202,7 +206,7 @@ class Dinomaly(AnomalibModule):
             raise ValueError(msg)
 
         # Set the trainable parameters for the model.
-        # Only the bottleneck and decoder parameters are trained.
+        # Only the bottleneck, decoder, and (optionally) LCF parameters are trained.
 
         for param in self.model.parameters():
             param.requires_grad = False
@@ -211,8 +215,15 @@ class Dinomaly(AnomalibModule):
             param.requires_grad = True
         for param in self.model.decoder.parameters():
             param.requires_grad = True
+        # Unfreeze LCF when present (LCF experiment)
+        if getattr(self.model, "lcf", None) is not None:
+            for param in self.model.lcf.parameters():
+                param.requires_grad = True
 
-        self.trainable_modules = torch.nn.ModuleList([self.model.bottleneck, self.model.decoder])
+        trainable = [self.model.bottleneck, self.model.decoder]
+        if getattr(self.model, "lcf", None) is not None:
+            trainable.append(self.model.lcf)
+        self.trainable_modules = torch.nn.ModuleList(trainable)
         self._initialize_trainable_modules(self.trainable_modules)
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
