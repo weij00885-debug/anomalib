@@ -92,8 +92,12 @@ class CosineHardMiningLoss(torch.nn.Module):
         cos_loss = torch.nn.CosineSimilarity()
         loss = torch.tensor(0.0, device=encoder_features[0].device)
         for item in range(len(encoder_features)):
-            en_ = encoder_features[item].detach()
-            de_ = decoder_features[item]
+            # bfloat16 is useful for Giant-model memory use, but its precision
+            # around cosine similarity 1.0 is too coarse for reconstruction
+            # loss and hard-mining thresholds. The cast retains gradients to
+            # the trainable decoder while computing these quantities in fp32.
+            en_ = encoder_features[item].detach().float()
+            de_ = decoder_features[item].float()
             with torch.no_grad():
                 point_dist = 1 - cos_loss(en_, de_).unsqueeze(1)
             k = max(1, int(point_dist.numel() * (1 - self.p)))

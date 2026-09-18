@@ -322,7 +322,11 @@ class DinomalyModel(nn.Module):
             anomaly_map = F.interpolate(anomaly_map, size=DEFAULT_RESIZE_SIZE, mode="bilinear", align_corners=False)
 
         # Apply Gaussian smoothing
-        anomaly_map = self.gaussian_blur(anomaly_map)
+        # The model (including the registered blur kernel) can be bfloat16,
+        # while cosine distances are intentionally computed in float32 to
+        # avoid score collapse. Match the convolution input to its kernel,
+        # then restore float32 for thresholding and metric computation.
+        anomaly_map = self.gaussian_blur(anomaly_map.to(dtype=self.gaussian_blur.kernel.dtype)).float()
 
         # Calculate anomaly score
         if DEFAULT_MAX_RATIO == 0:
@@ -368,8 +372,13 @@ class DinomalyModel(nn.Module):
 
         anomaly_map_list = []
         for i in range(len(target_feature_maps)):
-            fs = source_feature_maps[i]
-            ft = target_feature_maps[i]
+            # Giant Dinomaly may keep features in bfloat16 to fit GPU memory.
+            # Cosine similarities for a trained reconstruction are very close to
+            # one; evaluating them in bfloat16 rounds many values to exactly one
+            # and collapses all anomaly scores to zero. Compute only this
+            # numerically sensitive metric in float32.
+            fs = source_feature_maps[i].float()
+            ft = target_feature_maps[i].float()
             a_map = 1 - F.cosine_similarity(fs, ft)
             a_map = torch.unsqueeze(a_map, dim=1)
             a_map = F.interpolate(a_map, size=out_size, mode="bilinear", align_corners=True)
