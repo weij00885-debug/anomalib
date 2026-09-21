@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1780" viewBox="0 0 1600 1780" role="img" aria-labelledby="title desc">
+  <title id="title">当前仓库 Dinomaly 与共享 LCF 架构</title>
+  <desc id="desc">冻结 DINOv2 提取八层特征。输入融合经过瓶颈和八层解码器，反转后分组。编码器目标和解码器输出分别融合并计算余弦误差。开启 LCF 时五个位置共享同一个实例。训练使用全局余弦和局部梯度挖掘，推理分别输出异常图与平滑后最高百分之一均值分数。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L9,5 L0,10 Z" fill="#64748b"/></marker>
+    <style>
+      text {font-family:'Microsoft YaHei','Noto Sans CJK SC',Arial,sans-serif;fill:#15283e}
+      .title {font-size:34px;font-weight:700}.sub {font-size:18px;fill:#52647a}
+      .heading {font-size:23px;font-weight:700}.body {font-size:19px}.small {font-size:17px}
+      .line {fill:none;stroke:#64748b;stroke-width:2.5;marker-end:url(#arrow)}
+      .box {stroke-width:1.5;rx:16}.blue {fill:#eaf2ff;stroke:#6d98d1}
+      .teal {fill:#e6f5ef;stroke:#68a891}.amber {fill:#fff4db;stroke:#cda958}
+      .gray {fill:#f4f7fa;stroke:#b7c5d4}.purple {fill:#f0eaff;stroke:#a48acb}
+    </style>
+  </defs>
+  <rect width="1600" height="1780" fill="#fff"/>
+  <text class="title" x="60" y="60">Dinomaly · 当前代码架构</text>
+  <text class="sub" x="60" y="94">人脸脚本示例：392×392 · ViT/14 reg4 · decoder depth 8 · 默认两组融合</text>
+  <rect x="60" y="114" width="15" height="15" fill="#eaf2ff" stroke="#6d98d1"/><text class="small" x="86" y="128">冻结编码器</text>
+  <rect x="250" y="114" width="15" height="15" fill="#e6f5ef" stroke="#68a891"/><text class="small" x="276" y="128">可训练重建网络</text>
+  <rect x="485" y="114" width="15" height="15" fill="#fff4db" stroke="#cda958"/><text class="small" x="510" y="128">融合调用</text>
+  <text class="small" x="760" y="128">use_lcf=False：mean；use_lcf=True：共享 LCF</text>
+
+  <rect class="box gray" x="550" y="164" width="500" height="76"/>
+  <text class="heading" text-anchor="middle" x="800" y="194">人脸 RGB 输入</text>
+  <text class="body" text-anchor="middle" x="800" y="222">Resize 392 + Normalize · B×3×392×392</text>
+  <path class="line" d="M800 240 V272"/>
+  <rect class="box blue" x="400" y="274" width="800" height="110"/>
+  <text class="heading" text-anchor="middle" x="800" y="309">冻结 DINOv2 编码器 · eval / no_grad</text>
+  <text class="body" text-anchor="middle" x="800" y="338">Large：blocks 4,6,8,10,12,14,16,18 · C=1024</text>
+  <text class="body" text-anchor="middle" x="800" y="366">Giant：blocks 6,10,14,18,22,26,30,34 · C=1536</text>
+  <path class="line" d="M800 384 V418"/>
+  <rect class="box blue" x="390" y="420" width="820" height="94"/>
+  <text class="heading" text-anchor="middle" x="800" y="455">8 个中间层 F0…F7，各 B×789×C</text>
+  <text class="body" text-anchor="middle" x="800" y="487">789 = 784 patches + CLS + 4 registers；各层空间尺寸相同</text>
+
+  <path class="line" d="M1090 514 V558"/>
+  <rect class="box amber" x="890" y="560" width="640" height="90"/>
+  <text class="heading" text-anchor="middle" x="1210" y="595">输入融合：mean 或 LCF-A</text>
+  <text class="body" text-anchor="middle" x="1210" y="625">融合全部 8 层 → B×789×C</text>
+  <path class="line" d="M1210 650 V690"/>
+  <rect class="box teal" x="890" y="692" width="640" height="100"/>
+  <text class="heading" text-anchor="middle" x="1210" y="725">瓶颈 MLP：C → 4C → C</text>
+  <text class="body" text-anchor="middle" x="1210" y="755">输入 dropout + GELU + 中间/输出 dropout</text>
+  <text class="small" text-anchor="middle" x="1210" y="779">dropout=0.2；不改变 token 数或最终通道数</text>
+  <path class="line" d="M1210 792 V834"/>
+  <rect class="box teal" x="890" y="836" width="640" height="96"/>
+  <text class="heading" text-anchor="middle" x="1210" y="872">8 层解码器：D0 → D1 → … → D7</text>
+  <text class="body" text-anchor="middle" x="1210" y="904">每层：LN → LinearAttention → residual；LN → MLP → residual</text>
+  <path class="line" d="M1210 932 V972"/>
+  <rect class="box gray" x="890" y="974" width="640" height="66"/>
+  <text class="heading" text-anchor="middle" x="1210" y="1015">解码输出列表反转：D7,D6,…,D0</text>
+  <path class="line" d="M1210 1040 V1080"/>
+  <rect class="box amber" x="890" y="1082" width="640" height="136"/>
+  <text class="heading" text-anchor="middle" x="1210" y="1115">解码分组融合：mean 或 LCF-D / E</text>
+  <text class="body" text-anchor="middle" x="1210" y="1145">Y1：D7,D6,D5,D4；Y2：D3,D2,D1,D0</text>
+  <text class="body" text-anchor="middle" x="1210" y="1174">去 prefix / reshape → 两组 B×C×28×28</text>
+  <text class="small" text-anchor="middle" x="1210" y="1200">预测分支参与反向传播</text>
+
+  <path class="line" d="M510 514 V574"/>
+  <rect class="box amber" x="70" y="576" width="660" height="152"/>
+  <text class="heading" text-anchor="middle" x="400" y="613">编码分组融合：mean 或 LCF-B / C</text>
+  <text class="body" text-anchor="middle" x="400" y="647">T1：F0,F1,F2,F3；T2：F4,F5,F6,F7</text>
+  <text class="body" text-anchor="middle" x="400" y="680">去 prefix / reshape → 两组 B×C×28×28</text>
+  <text class="small" text-anchor="middle" x="400" y="708">训练 loss 内 detach；共享 LCF 参数仍可能跨步骤改变目标</text>
+  <path class="line" d="M160 728 V1250 H620 V1270"/>
+
+  <rect class="box gray" x="210" y="790" width="570" height="228"/>
+  <text class="heading" x="238" y="829">当前 LCF：五处调用共享一套参数</text>
+  <text class="body" x="238" y="866">同一 token 位置上进行跨层 Q/K/V 注意力</text>
+  <text class="body" x="238" y="900">同时存在 value / output 通道投影</text>
+  <text class="body" x="238" y="934">参数：4(C²+C)，Giant 约 9.44M</text>
+  <text class="small" x="238" y="970">图中的 A/B/C/D/E 是调用位置，不是五个模块。</text>
+  <text class="small" x="238" y="995">类默认 Base / mean；具体实验取决于命令参数。</text>
+
+  <path class="line" d="M1210 1218 V1250 H980 V1270"/>
+  <rect class="box purple" x="400" y="1272" width="800" height="88"/>
+  <text class="heading" text-anchor="middle" x="800" y="1306">对应组比较：T1 ↔ Y1，T2 ↔ Y2</text>
+  <text class="body" text-anchor="middle" x="800" y="1338">训练与推理使用不同的聚合/梯度处理方式</text>
+  <path class="line" d="M600 1360 V1398 H400 V1420"/>
+  <path class="line" d="M1000 1360 V1398 H1210 V1420"/>
+  <rect class="box teal" x="70" y="1422" width="660" height="130"/>
+  <text class="heading" text-anchor="middle" x="400" y="1457">训练：原 CosineHardMiningLoss</text>
+  <text class="body" text-anchor="middle" x="400" y="1490">整图展开的全局 cosine loss，两组平均</text>
+  <text class="body" text-anchor="middle" x="400" y="1520">局部距离选择困难位置；容易位置梯度 ×0.1</text>
+  <rect class="box purple" x="870" y="1422" width="680" height="98"/>
+  <text class="heading" text-anchor="middle" x="1210" y="1457">推理：两组 FP32 patch cosine distance</text>
+  <text class="body" text-anchor="middle" x="1210" y="1490">各自上采样 392×392 后平均</text>
+  <path class="line" d="M1040 1520 V1555 H905 V1590"/>
+  <path class="line" d="M1380 1520 V1590"/>
+  <rect class="box gray" x="740" y="1592" width="330" height="95"/>
+  <text class="heading" text-anchor="middle" x="905" y="1628">anomaly_map</text>
+  <text class="body" text-anchor="middle" x="905" y="1660">返回未平滑 392×392 图</text>
+  <rect class="box purple" x="1120" y="1592" width="430" height="118"/>
+  <text class="heading" text-anchor="middle" x="1335" y="1627">pred_score</text>
+  <text class="body" text-anchor="middle" x="1335" y="1658">resize 256 → blur → top 1% 均值</text>
+  <text class="small" text-anchor="middle" x="1335" y="1690">PostProcessor 再校准阈值/输出标签</text>
+  <text class="small" x="60" y="1738">代码依据：torch_model.py · lightning_model.py · components/lcf.py / loss.py；核查日期 2026-09-21</text>
+  <text class="small" x="60" y="1764">启用 remove_class_token 或 context recentering 时中间 N=784；两者互斥，主图按未启用绘制。</text>
+</svg>

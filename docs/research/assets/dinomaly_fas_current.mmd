@@ -1,0 +1,23 @@
+flowchart TD
+    I["人脸 RGB，B×3×392×392"] --> E["冻结 DINOv2 ViT/14 reg4"]
+    E --> F["8 个中间层 F0…F7，各 B×789×C"]
+    F --> IN["输入融合：mean 或 LCF-A，8→1"]
+    IN --> M["瓶颈 MLP：C→4C→C，GELU + dropout 0.2"]
+    M --> D["可训练解码器：D0→D7，LinearAttention + MLP"]
+    D --> REV["列表反转：D7,D6,…,D0"]
+    F --> T1["目标组 1：F0…F3，mean 或 LCF-B"]
+    F --> T2["目标组 2：F4…F7，mean 或 LCF-C"]
+    REV --> Y1["输出组 1：D7…D4，mean 或 LCF-D"]
+    REV --> Y2["输出组 2：D3…D0，mean 或 LCF-E"]
+    T1 --> P1["去 prefix / reshape：T1,Y1 → B×C×28×28"]
+    Y1 --> P1
+    T2 --> P2["去 prefix / reshape：T2,Y2 → B×C×28×28"]
+    Y2 --> P2
+    P1 --> L["训练：detach 目标，全局 cosine + 局部梯度 hard mining"]
+    P2 --> L
+    P1 --> A["推理：各组 FP32 patch cosine distance"]
+    P2 --> A
+    A --> U["各图上采样 392×392，再平均"]
+    U --> MAP["返回 anomaly_map：未平滑"]
+    U --> S["评分：resize 256 → Gaussian blur → top 1% 均值"]
+    S --> PP["pred_score → PostProcessor → 标签与指标"]

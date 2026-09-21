@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1670" viewBox="0 0 1600 1670" role="img" aria-labelledby="title desc">
+  <title id="title">面向单类人脸防伪的 Dinomaly 分阶段扩展方案</title>
+  <desc id="desc">方案依次增加输入侧稳定层路由、区域正常残差校准、匹配正常代价的图像遮挡复核。保留冻结 DINO 目标和原重建网络。复核从原图遮挡后重新编码，与未遮挡目标比较。所有新增模块均为待实施研究假设。</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0,0 L9,5 L0,10 Z" fill="#64748b"/></marker>
+    <style>
+      text {font-family:'Microsoft YaHei','Noto Sans CJK SC',Arial,sans-serif;fill:#15283e}
+      .title {font-size:34px;font-weight:700}.sub {font-size:19px;fill:#52647a}
+      .heading {font-size:24px;font-weight:700}.body {font-size:19px}.small {font-size:17px}
+      .line {fill:none;stroke:#64748b;stroke-width:2.5;marker-end:url(#arrow)}
+      .dash {stroke-dasharray:9 6}.box {stroke-width:1.5;rx:16}
+      .old {fill:#f2f6fa;stroke:#aabacd}.new {fill:#e6f5ef;stroke:#58a38b}
+      .stat {fill:#eaf2ff;stroke:#6d98d1}.verify {fill:#fff4db;stroke:#cda958}
+    </style>
+  </defs>
+  <rect width="1600" height="1670" fill="white"/>
+  <text class="title" x="60" y="62">从层选择到证据复核 · 建议扩展路线</text>
+  <text class="sub" x="60" y="99">适用：LCC-FASD / NUAA / Replay-Attack / OULU-NPU；新模块均为设计，尚无实测结果</text>
+  <rect class="box old" x="520" y="143" width="560" height="73"/>
+  <text class="heading" text-anchor="middle" x="800" y="188">RGB 人脸 → 冻结 DINOv2 → 8 层特征</text>
+  <path class="line" d="M800 216 V252"/>
+  <rect class="box new" x="450" y="254" width="700" height="124"/>
+  <text class="heading" text-anchor="middle" x="800" y="290">1 · SLR：固定参照的保值层选择</text>
+  <text class="body" text-anchor="middle" x="800" y="324">LN → C→64→1 → 层 softmax → 均匀权重混合</text>
+  <text class="body" text-anchor="middle" x="800" y="354">加权原始 values；只替换瓶颈前输入融合</text>
+  <path class="line" d="M800 378 V418"/>
+  <rect class="box old" x="490" y="420" width="620" height="105"/>
+  <text class="heading" text-anchor="middle" x="800" y="456">原瓶颈 MLP + 原 8 层解码器</text>
+  <text class="body" text-anchor="middle" x="800" y="490">反转输出 → 固定分组 mean → Y1,Y2</text>
+  <path class="line" d="M550 216 H190 V418"/>
+  <rect class="box stat" x="40" y="420" width="330" height="138"/>
+  <text class="heading" text-anchor="middle" x="205" y="458">固定正常参照</text>
+  <text class="body" text-anchor="middle" x="205" y="492">未遮挡编码特征分组 mean</text>
+  <text class="body" text-anchor="middle" x="205" y="525">T1,T2 · loss 中 detach</text>
+  <path class="line" d="M800 525 V578"/>
+  <path class="line" d="M205 558 V623 H488"/>
+  <rect class="box old" x="490" y="580" width="620" height="88"/>
+  <text class="heading" text-anchor="middle" x="800" y="616">两组原生 patch cosine 残差</text>
+  <text class="body" text-anchor="middle" x="800" y="646">B×2×28×28 · 保留组间信息</text>
+  <path class="line" d="M800 668 V710"/>
+  <rect class="box new" x="450" y="712" width="700" height="120"/>
+  <text class="heading" text-anchor="middle" x="800" y="750">2 · RCNC：区域条件正常性校准</text>
+  <text class="body" text-anchor="middle" x="800" y="783">相对各空间区真人 median / MAD 解释误差</text>
+  <text class="small" text-anchor="middle" x="800" y="814">独立真人校准集拟合；统计量随 checkpoint 保存，测试冻结</text>
+  <rect class="box stat" x="1210" y="712" width="340" height="120"/>
+  <text class="heading" text-anchor="middle" x="1380" y="754">真人校准数据</text>
+  <text class="body" text-anchor="middle" x="1380" y="788">分组 / 区域误差统计</text>
+  <text class="small" text-anchor="middle" x="1380" y="815">跨库主实验只用源域</text>
+  <path class="line" d="M1210 772 H1152"/>
+  <path class="line" d="M800 832 V874"/>
+  <rect class="box old" x="490" y="876" width="620" height="85"/>
+  <text class="heading" text-anchor="middle" x="800" y="912">基础分数 + 高残差候选区域</text>
+  <text class="body" text-anchor="middle" x="800" y="942">每次实验冻结相同的选区和评分规则</text>
+  <path class="line" d="M800 961 V1002"/>
+  <rect class="box verify" x="450" y="1004" width="700" height="112"/>
+  <text class="heading" text-anchor="middle" x="800" y="1043">3 · CMV：在原图上遮挡候选区域</text>
+  <text class="body" text-anchor="middle" x="800" y="1075">重跑同一冻结编码器 + 共享路由 / 重建网络</text>
+  <text class="small" text-anchor="middle" x="800" y="1102">不能仅把已交换全局信息的 DINO token 置零就声称无泄漏</text>
+  <path class="line" d="M1080 180 H1575 V1060 H1152"/>
+  <text class="small" x="1278" y="1040">原始输入用于第二次遮挡前向</text>
+  <path class="line" d="M800 1116 V1158"/>
+  <rect class="box verify" x="450" y="1160" width="700" height="90"/>
+  <text class="heading" text-anchor="middle" x="800" y="1198">masked Y 与 clean T 比较</text>
+  <text class="body" text-anchor="middle" x="800" y="1230">仅在遮挡位置计算复核误差</text>
+  <path class="line" d="M80 558 V1205 H448"/>
+  <text class="small" x="99" y="1177">未遮挡固定目标</text>
+  <path class="line" d="M800 1250 V1290"/>
+  <rect class="box stat" x="450" y="1292" width="700" height="102"/>
+  <text class="heading" text-anchor="middle" x="800" y="1330">校准匹配区域 / 面积的真人遮挡代价</text>
+  <text class="body" text-anchor="middle" x="800" y="1363">区别“本来难预测”与“超出正常复核代价”</text>
+  <path class="line" d="M800 1394 V1432"/>
+  <rect class="box new" x="450" y="1434" width="700" height="95"/>
+  <text class="heading" text-anchor="middle" x="800" y="1472">基础分数 + 复核分数 → 检测结果</text>
+  <text class="body" text-anchor="middle" x="800" y="1505">记录区域、正常偏离、复核代价与固定阈值</text>
+  <path class="line" d="M1110 920 H1190 V1480 H1152"/>
+  <text class="small" x="1210" y="1459">基础分数旁路</text>
+  <path class="line dash" d="M800 1529 V1566"/>
+  <rect class="box old" x="450" y="1568" width="700" height="58"/>
+  <text class="body" text-anchor="middle" x="800" y="1604">可选最后一步：模板 / 语言报告，引用真实计算证据</text>
+  <text class="small" x="60" y="1650">推进顺序：每项独立消融 → 再组合；仍使用原 Dinomaly 重建损失，CMV 单独增加遮挡位置损失。</text>
+</svg>
