@@ -1,4 +1,4 @@
-# Copyright (C) 2025 Intel Corporation
+# Copyright (C) 2025-2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 """Dinomaly: Vision Transformer-based Anomaly Detection with Feature Reconstruction.
@@ -128,6 +128,13 @@ class Dinomaly(AnomalibModule):
             default. Defaults to ``True``.
         visualizer (Visualizer | bool, optional): Visualizer instance or flag to
             use default. Defaults to ``True``.
+        use_cltc (bool): Add a detached cross-layer trajectory predictor. Defaults to False.
+        cltc_hidden_dim (int): Predictor width. Defaults to 128.
+        cltc_loss_weight (float): Auxiliary Smooth L1 weight. Defaults to 0.1.
+        cltc_score_weight (float): Trajectory score fusion weight. Defaults to 1.0.
+            Fit ``model.trajectory_head.fit_score_scales`` on normal calibration
+            image scores before calibrated inference. Disabled models retain the
+            original scoring and checkpoint keys.
 
     Example:
         >>> from anomalib.data import MVTecAD
@@ -172,6 +179,10 @@ class Dinomaly(AnomalibModule):
         post_processor: PostProcessor | bool = True,
         evaluator: Evaluator | bool = True,
         visualizer: Visualizer | bool = True,
+        use_cltc: bool = False,
+        cltc_hidden_dim: int = 128,
+        cltc_loss_weight: float = 0.1,
+        cltc_score_weight: float = 1.0,
     ) -> None:
         super().__init__(
             pre_processor=pre_processor,
@@ -191,6 +202,10 @@ class Dinomaly(AnomalibModule):
             use_context_recentering=use_context_recentering,
             use_lcf=use_lcf,
             lcf_dropout=lcf_dropout,
+            use_cltc=use_cltc,
+            cltc_hidden_dim=cltc_hidden_dim,
+            cltc_loss_weight=cltc_loss_weight,
+            cltc_score_weight=cltc_score_weight,
         )
 
         if isinstance(precision, str):
@@ -225,6 +240,13 @@ class Dinomaly(AnomalibModule):
             trainable.append(self.model.lcf)
         self.trainable_modules = torch.nn.ModuleList(trainable)
         self._initialize_trainable_modules(self.trainable_modules)
+        if self.model.trajectory_head is not None:
+            # Keep trajectory prediction and scale statistics in FP32, including
+            # when the existing encoder/decoder use BF16 weights.
+            self.model.trajectory_head.float().requires_grad_(requires_grad=True)
+            with torch.random.fork_rng(devices=[]):
+                self._initialize_trainable_modules(torch.nn.ModuleList([self.model.trajectory_head]))
+            self.trainable_modules.append(self.model.trajectory_head)
 
     def on_load_checkpoint(self, checkpoint: dict[str, Any]) -> None:
         """Make checkpoints trained before the timm-encoder migration loadable.
@@ -238,6 +260,27 @@ class Dinomaly(AnomalibModule):
             checkpoint (dict[str, Any]): The checkpoint dictionary being loaded, modified in place.
         """
         restore_frozen_encoder_weights(self, checkpoint, encoder_key="encoder")
+
+    def configure_gradient_clipping(
+        self,
+        optimizer: torch.optim.Optimizer,
+        gradient_clip_val: float | None = None,
+        gradient_clip_algorithm: str | None = None,
+    ) -> None:
+        """Clip the detached head independently so its norm cannot rescale base gradients."""
+        head = self.model.trajectory_head
+        if head is None:
+            super().configure_gradient_clipping(optimizer, gradient_clip_val, gradient_clip_algorithm)
+            return
+        if not gradient_clip_val:
+            return
+        head_ids = {id(param) for param in head.parameters()}
+        base_parameters = [
+            param for group in optimizer.param_groups for param in group["params"] if id(param) not in head_ids
+        ]
+        clip = torch.nn.utils.clip_grad_value_ if gradient_clip_algorithm == "value" else torch.nn.utils.clip_grad_norm_
+        clip(base_parameters, gradient_clip_val)
+        clip(list(head.parameters()), gradient_clip_val)
 
     @classmethod
     def configure_pre_processor(
@@ -404,7 +447,7 @@ class Dinomaly(AnomalibModule):
 
     @property
     def learning_type(self) -> LearningType:
-        """Return the learning type of the model.
+        """Learning type of the model.
 
         Dinomaly is an unsupervised anomaly detection model that learns normal
         data patterns without requiring anomaly labels during training.
@@ -420,7 +463,7 @@ class Dinomaly(AnomalibModule):
 
     @property
     def trainer_arguments(self) -> dict[str, Any]:
-        """Return Dinomaly-specific trainer arguments.
+        """Dinomaly-specific trainer arguments.
 
         Provides configuration arguments optimized for Dinomaly training,
         excluding max_steps to allow users to set their own training duration.

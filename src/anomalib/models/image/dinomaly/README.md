@@ -2,6 +2,11 @@
 
 > 本文档提供 Dinomaly 模型的完整讲解，包括原理、代码、运行方式和调参指南。
 
+实验性 CLTC 旁路可通过 `Dinomaly(use_lcf=True, use_cltc=True)` 启用（默认关闭）。
+该预测头读取 LCF 输入融合结果的 detached patch 特征，仅预测头接收轨迹损失的梯度。
+OULU-NPU 运行命令、正常开发集尺度拟合及三支路评分比较，见
+[CLTC 实验说明](../../../../../docs/research/dinomaly_cltc_oulu_experiment.md)。
+
 ## 目录
 
 - [1. 模型简介](#1-模型简介)

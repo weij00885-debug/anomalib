@@ -1,4 +1,4 @@
-# Copyright (C) 2025 Intel Corporation
+# Copyright (C) 2025-2026 Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
 
 """PyTorch model for the Dinomaly model implementation.
@@ -13,9 +13,10 @@ See Also:
 """
 
 from functools import partial
+from math import isfinite
 
 import torch
-import torch.nn.functional as F  # noqa: N812
+import torch.nn.functional as F  # ruff: ignore[lowercase-imported-as-non-lowercase]
 from timm.layers.drop import DropPath
 from torch import nn
 
@@ -24,6 +25,7 @@ from anomalib.models.components import GaussianBlur2d
 from anomalib.models.components.feature_extractors import TimmFeatureExtractor
 from anomalib.models.image.dinomaly.components import (
     CosineHardMiningLoss,
+    CrossLayerTrajectoryHead,
     DinomalyMLP,
     LayerConditionalFusion,
     LinearAttention,
@@ -97,6 +99,11 @@ class DinomalyModel(nn.Module):
             class-specific context. This is particularly beneficial for multi-class
             anomaly detection settings. Incompatible with ``remove_class_token=True``.
             Defaults to False.
+        use_cltc (bool): Enable the detached trajectory head. Defaults to False.
+        cltc_hidden_dim (int): Trajectory predictor width. Defaults to 128.
+        cltc_loss_weight (float): Auxiliary Smooth L1 weight. Defaults to 0.1.
+        cltc_score_weight (float): Trajectory contribution after score-scale
+            alignment. Defaults to 1.0. Scales default to one until calibrated.
 
     Example:
         >>> model = DinomalyModel(
@@ -119,6 +126,10 @@ class DinomalyModel(nn.Module):
         use_context_recentering: bool = False,
         use_lcf: bool = False,
         lcf_dropout: float = 0.0,
+        use_cltc: bool = False,
+        cltc_hidden_dim: int = 128,
+        cltc_loss_weight: float = 0.1,
+        cltc_score_weight: float = 1.0,
     ) -> None:
         super().__init__()
 
@@ -215,6 +226,20 @@ class DinomalyModel(nn.Module):
         else:
             self.lcf = None
 
+        if any(not isfinite(value) or value < 0 for value in (cltc_loss_weight, cltc_score_weight)):
+            msg = "CLTC loss and score weights must be finite and nonnegative."
+            raise ValueError(msg)
+        self.cltc_loss_weight = cltc_loss_weight
+        self.cltc_score_weight = cltc_score_weight
+        self.trajectory_head = None
+        if use_cltc:
+            if self.target_layers != sorted(set(self.target_layers)):
+                msg = "CLTC target_layers must be unique and ordered from shallow to deep."
+                raise ValueError(msg)
+            # Do not change the random stream used for baseline initialization.
+            with torch.random.fork_rng(devices=[]):
+                self.trajectory_head = CrossLayerTrajectoryHead(embed_dim, len(self.target_layers), cltc_hidden_dim)
+
         # Initialize Gaussian blur for anomaly map smoothing
         self.gaussian_blur = GaussianBlur2d(
             sigma=DEFAULT_GAUSSIAN_SIGMA,
@@ -240,6 +265,14 @@ class DinomalyModel(nn.Module):
                 - en: List of fused encoder features reshaped to spatial dimensions
                 - de: List of fused decoder features reshaped to spatial dimensions
         """
+        en, de, _, _ = self._get_outputs(x)
+        return en, de
+
+    def _get_outputs(
+        self,
+        x: torch.Tensor,
+    ) -> tuple[list[torch.Tensor], list[torch.Tensor], torch.Tensor | None, torch.Tensor | None]:
+        """Compute reconstruction pairs and optional trajectory predictions/targets."""
         h_patches = x.shape[2] // self.encoder.patch_size
         w_patches = x.shape[3] // self.encoder.patch_size
 
@@ -247,6 +280,11 @@ class DinomalyModel(nn.Module):
         features = self.encoder(x)
         encoder_features = [features[f"blocks.{i}"] for i in self.target_layers]
         decoder_features = []
+        prefix_count = 1 + self.encoder.num_register_tokens
+        trajectory_target = None
+        trajectory_prediction = None
+        if self.trajectory_head is not None:
+            trajectory_target = self.trajectory_head.build_target([e[:, prefix_count:] for e in encoder_features])
 
         if self.remove_class_token:
             encoder_features = [e[:, 1 + self.encoder.num_register_tokens :, :] for e in encoder_features]
@@ -262,6 +300,9 @@ class DinomalyModel(nn.Module):
             encoder_features = recentered
 
         x = self._fuse_feature(encoder_features)
+        if self.trajectory_head is not None:
+            patches = x if self.remove_class_token or self.use_context_recentering else x[:, prefix_count:]
+            trajectory_prediction = self.trajectory_head(patches)
         for _i, block in enumerate(self.bottleneck):
             x = block(x)
 
@@ -279,7 +320,7 @@ class DinomalyModel(nn.Module):
         # Process features for spatial output
         en = self._process_features_for_spatial_output(en, h_patches, w_patches)
         de = self._process_features_for_spatial_output(de, h_patches, w_patches)
-        return en, de
+        return en, de, trajectory_prediction, trajectory_target
 
     def forward(self, batch: torch.Tensor, global_step: int | None = None) -> torch.Tensor | InferenceBatch:
         """Forward pass of the Dinomaly model.
@@ -295,15 +336,14 @@ class DinomalyModel(nn.Module):
 
         Returns:
             torch.Tensor | InferenceBatch:
-                - During training: Dictionary containing encoder and decoder features
-                  for loss computation.
+                - During training: Scalar reconstruction loss plus optional CLTC loss.
                 - During inference: InferenceBatch with pred_score (anomaly scores)
                   and anomaly_map (pixel-level anomaly maps).
 
         """
         dtype = next(self.encoder.parameters()).dtype
         batch = batch.type(dtype)
-        en, de = self.get_encoder_decoder_outputs(batch)
+        en, de, prediction, target = self._get_outputs(batch)
         image_size = (batch.shape[2], batch.shape[3])
 
         if self.training:
@@ -311,12 +351,25 @@ class DinomalyModel(nn.Module):
                 error_msg = "global_step must be provided during training"
                 raise ValueError(error_msg)
 
-            return self.loss_fn(encoder_features=en, decoder_features=de, global_step=global_step)
+            loss = self.loss_fn(encoder_features=en, decoder_features=de, global_step=global_step)
+            if prediction is not None and target is not None:
+                loss = loss + self.cltc_loss_weight * F.smooth_l1_loss(prediction, target)
+            return loss
 
         # If inference, calculate anomaly maps, predictions, from the encoder and decoder features.
         anomaly_map, _ = self.calculate_anomaly_maps(en, de, out_size=image_size)
-        anomaly_map_resized = anomaly_map.clone()
+        result, _ = self._combine_predictions(anomaly_map, prediction, target, image_size)
+        return result
 
+    def score_anomaly_map(self, anomaly_map: torch.Tensor) -> torch.Tensor:
+        """Pool a map with the existing resize, blur and top-one-percent recipe.
+
+        Args:
+            anomaly_map (torch.Tensor): Anomaly maps with shape [B, 1, H, W].
+
+        Returns:
+            torch.Tensor: FP32 image scores of shape [B].
+        """
         # Resize anomaly map for processing
         if DEFAULT_RESIZE_SIZE is not None:
             anomaly_map = F.interpolate(anomaly_map, size=DEFAULT_RESIZE_SIZE, mode="bilinear", align_corners=False)
@@ -338,9 +391,55 @@ class DinomalyModel(nn.Module):
                 : int(anomaly_map_flat.shape[1] * DEFAULT_MAX_RATIO),
             ]
             sp_score = sp_score.mean(dim=1)
-        pred_score = sp_score
+        return sp_score
 
-        return InferenceBatch(pred_score=pred_score, anomaly_map=anomaly_map_resized)
+    def _combine_predictions(
+        self,
+        reconstruction_map: torch.Tensor,
+        prediction: torch.Tensor | None,
+        target: torch.Tensor | None,
+        image_size: tuple[int, int],
+    ) -> tuple[InferenceBatch, dict[str, torch.Tensor]]:
+        """Fuse separately pooled image scores; also return a fused display map."""
+        rec_score = self.score_anomaly_map(reconstruction_map)
+        scores = {"reconstruction": rec_score}
+        if self.trajectory_head is None or prediction is None or target is None:
+            return InferenceBatch(pred_score=rec_score, anomaly_map=reconstruction_map), scores
+        h, w = (size // self.encoder.patch_size for size in image_size)
+        trajectory_map = (prediction - target).abs().mean(-1).reshape(-1, 1, h, w)
+        trajectory_map = F.interpolate(trajectory_map, size=image_size, mode="bilinear", align_corners=True)
+        trajectory_score = self.score_anomaly_map(trajectory_map)
+        rec_scale, traj_scale = self.trajectory_head.score_scales
+        fused_score = rec_score / rec_scale + self.cltc_score_weight * trajectory_score / traj_scale
+        fused_map = reconstruction_map / rec_scale + self.cltc_score_weight * trajectory_map / traj_scale
+        scores.update(trajectory=trajectory_score, fused=fused_score)
+        return InferenceBatch(pred_score=fused_score, anomaly_map=fused_map), scores
+
+    @torch.no_grad()
+    def predict_branch_scores(self, batch: torch.Tensor) -> dict[str, torch.Tensor]:
+        """Return raw reconstruction, trajectory and fused image scores in eval mode.
+
+        Input must already be preprocessed. Fusion occurs after independent
+        pooling, so pred_score is not the top-one-percent pool of the fused map.
+
+        Args:
+            batch (torch.Tensor): Preprocessed input images of shape [B, 3, H, W].
+
+        Returns:
+            dict[str, torch.Tensor]: Each branch's FP32 score vector of shape [B].
+
+        Raises:
+            RuntimeError: If the model is in training mode.
+        """
+        if self.training:
+            msg = "Call eval() before predict_branch_scores()."
+            raise RuntimeError(msg)
+        batch = batch.to(dtype=next(self.encoder.parameters()).dtype)
+        en, de, prediction, target = self._get_outputs(batch)
+        image_size = (batch.shape[2], batch.shape[3])
+        reconstruction_map, _ = self.calculate_anomaly_maps(en, de, out_size=image_size)
+        _, scores = self._combine_predictions(reconstruction_map, prediction, target, image_size)
+        return scores
 
     @staticmethod
     def calculate_anomaly_maps(
