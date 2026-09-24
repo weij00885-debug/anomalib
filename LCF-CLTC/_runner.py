@@ -42,6 +42,8 @@ class DatasetSpec:
     slug: str
     encoder_name: str
     dedicated_normal_test: bool
+    cltc_loss_weight: float = 0.1
+    cltc_score_weight: float = 1.0
 
 
 def build_groups(count: int) -> list[list[int]]:
@@ -189,8 +191,8 @@ def parse_args(spec: DatasetSpec) -> argparse.Namespace:
     parser.add_argument("--val-split-ratio", type=float, default=0.2)
     parser.add_argument("--normal-test-ratio", type=float, default=0.2)
     parser.add_argument("--cltc-hidden-dim", type=int, default=128)
-    parser.add_argument("--cltc-loss-weight", type=float, default=0.1)
-    parser.add_argument("--cltc-score-weight", type=float, default=1.0)
+    parser.add_argument("--cltc-loss-weight", type=float, default=spec.cltc_loss_weight)
+    parser.add_argument("--cltc-score-weight", type=float, default=spec.cltc_score_weight)
     parser.add_argument("--accelerator", choices=["auto", "cpu", "gpu", "xpu"], default="gpu")
     parser.add_argument("--results-dir", type=Path, default=Path(f"results/{spec.slug}_lcf_cltc_legacy_s42"))
     args = parser.parse_args()

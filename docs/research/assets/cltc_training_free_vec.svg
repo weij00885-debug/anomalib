@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="810" viewBox="0 0 1280 810">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#475569"/></marker>
+    <style>text{font-family:'Microsoft YaHei','Noto Sans CJK SC',sans-serif;fill:#172b44;font-size:21px}.title{font-size:30px;font-weight:700}.sub{font-size:18px;fill:#54677c}.head{font-weight:700}.base{fill:#f1f5f9;stroke:#94a3b8;stroke-width:2}.new{fill:#e0f2fe;stroke:#0284c7;stroke-width:2.5}.out{fill:#ecfdf5;stroke:#059669;stroke-width:2}.edge{fill:none;stroke:#475569;stroke-width:2.3;marker-end:url(#arrow)}.note{font-size:17px;fill:#54677c}.gate{fill:#fff7ed;stroke:#ea580c;stroke-width:2}</style>
+  </defs>
+  <rect width="1280" height="810" fill="white"/>
+  <text x="40" y="44" class="title">额外方案 · VEC 轻量视觉证据链</text>
+  <text x="40" y="76" class="sub">前一步的可测量证据决定下一步是否执行、检查哪里；全部使用已训练权重</text>
+  <rect x="45" y="125" width="340" height="120" rx="14" class="base"/>
+  <text x="215" y="162" text-anchor="middle" class="head">步骤 1：发现和定位</text>
+  <text x="215" y="198" text-anchor="middle">原模型 → r、t、S0</text>
+  <text x="215" y="230" text-anchor="middle">原生图 → 可疑区域 Ω</text>
+  <path d="M385 185H465" class="edge"/>
+  <rect x="465" y="125" width="355" height="120" rx="14" class="new"/>
+  <text x="642" y="162" text-anchor="middle" class="head">步骤 2：检查证据对应</text>
+  <text x="642" y="198" text-anchor="middle">计算两路空间互证 ρ</text>
+  <text x="642" y="230" text-anchor="middle">检查距阈值的距离与分歧</text>
+  <path d="M642 245V302" class="edge"/>
+  <path d="M642 300L817 370L642 440L467 370Z" class="gate"/>
+  <text x="642" y="365" text-anchor="middle" class="head">需要复查？</text>
+  <text x="642" y="396" text-anchor="middle" class="sub">固定验证集路由规则</text>
+  <path d="M817 370H927" class="edge"/>
+  <text x="863" y="350" text-anchor="middle" class="sub">是</text>
+  <rect x="927" y="305" width="313" height="135" rx="14" class="new"/>
+  <text x="1083" y="344" text-anchor="middle" class="head">步骤 3：同区域复核</text>
+  <text x="1083" y="380" text-anchor="middle">SPR 额外 3 个视图</text>
+  <text x="1083" y="414" text-anchor="middle">同一个 Ω → e → S_C</text>
+  <path d="M215 245V276H1083V305" class="edge"/>
+  <text x="938" y="265" text-anchor="middle" class="sub">区域 Ω 决定复查位置</text>
+  <path d="M467 370H230V558H430" class="edge"/>
+  <text x="335" y="350" text-anchor="middle" class="sub">否：返回 S0</text>
+  <path d="M1083 440V558H885" class="edge"/>
+  <text x="965" y="529" text-anchor="middle" class="sub">返回 S_C</text>
+  <rect x="430" y="500" width="455" height="115" rx="14" class="out"/>
+  <text x="657" y="537" text-anchor="middle" class="head">最终 S_chain 与标签</text>
+  <text x="657" y="573" text-anchor="middle">在完整验证集输出上重新选阈值</text>
+  <path d="M657 615V660" class="edge"/>
+  <rect x="320" y="660" width="675" height="65" rx="12" class="new"/>
+  <text x="657" y="700" text-anchor="middle">逐样本保存：分数、区域、路由原因、复核证据、最终判断</text>
+  <text x="40" y="765" class="note">触发比例 π 时，平均前向次数 = 1 + 3π。必须比较相同预算的随机复查。</text>
+  <text x="40" y="793" class="note">这是受 CoT 启发的视觉证据链；未使用语言推理模型，不能宣称具备语言模型式思维链。</text>
+</svg>

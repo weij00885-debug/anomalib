@@ -12,5 +12,7 @@ if __name__ == "__main__":
             slug="lcc",
             encoder_name="vit_large_patch14_reg4_dinov2",
             dedicated_normal_test=False,
+            cltc_loss_weight=0.5,
+            cltc_score_weight=0.25,
         ),
     )

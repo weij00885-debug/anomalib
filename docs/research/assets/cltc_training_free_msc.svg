@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="790" viewBox="0 0 1280 790">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#475569"/></marker>
+    <style>text{font-family:'Microsoft YaHei','Noto Sans CJK SC',sans-serif;fill:#172b44;font-size:21px}.title{font-size:30px;font-weight:700}.sub{font-size:18px;fill:#54677c}.head{font-weight:700}.base{fill:#f1f5f9;stroke:#94a3b8;stroke-width:2}.new{fill:#e0f2fe;stroke:#0284c7;stroke-width:2.5}.out{fill:#ecfdf5;stroke:#059669;stroke-width:2}.edge{fill:none;stroke:#475569;stroke-width:2.3;marker-end:url(#arrow)}.note{font-size:17px;fill:#54677c}</style>
+  </defs>
+  <rect width="1280" height="790" fill="white"/>
+  <text x="40" y="44" class="title">方案 A · MSC 多阈值空间互证</text>
+  <text x="40" y="76" class="sub">灰色：已有模型与评分　蓝色：新增免训练操作　绿色：最终分数</text>
+  <rect x="340" y="105" width="600" height="100" rx="14" class="base"/>
+  <text x="640" y="139" text-anchor="middle" class="head">已有 LCF＋CLTC checkpoint · 一次前向</text>
+  <text x="640" y="170" text-anchor="middle">重建：DINO → 共享 LCF → 解码器</text>
+  <text x="640" y="195" text-anchor="middle">轨迹：LCF → detach → CLTC，与实际轨迹比较</text>
+  <path d="M480 205V228H320V255" class="edge"/>
+  <path d="M800 205V228H890V255" class="edge"/>
+  <rect x="160" y="255" width="320" height="85" rx="12" class="base"/>
+  <text x="320" y="290" text-anchor="middle" class="head">原生重建异常图 R</text>
+  <text x="320" y="322" text-anchor="middle">28 × 28 patch</text>
+  <rect x="730" y="255" width="320" height="85" rx="12" class="base"/>
+  <text x="890" y="290" text-anchor="middle" class="head">原生轨迹异常图 U</text>
+  <text x="890" y="322" text-anchor="middle">28 × 28 patch</text>
+  <path d="M200 340V410" class="edge"/>
+  <path d="M1030 340V410" class="edge"/>
+  <path d="M400 340V380H490V415" class="edge"/>
+  <path d="M820 340V380H760V415" class="edge"/>
+  <rect x="40" y="410" width="240" height="100" rx="12" class="base"/>
+  <text x="160" y="445" text-anchor="middle">旧打分流程 P(R)</text>
+  <text x="160" y="477" text-anchor="middle">r = P(R) / q_rec</text>
+  <rect x="1000" y="410" width="240" height="100" rx="12" class="base"/>
+  <text x="1120" y="445" text-anchor="middle">旧打分流程 P(U)</text>
+  <text x="1120" y="477" text-anchor="middle">t = P(U) / q_traj</text>
+  <rect x="330" y="415" width="610" height="125" rx="14" class="new"/>
+  <text x="635" y="447" text-anchor="middle" class="head">新增 MSC：比较同一位置的高响应</text>
+  <text x="635" y="480" text-anchor="middle">top 5% / 10% / 20% → 扣除机会重合 → ρ</text>
+  <text x="635" y="514" text-anchor="middle">α_eff = α × [0.5 + 0.5ρ]</text>
+  <path d="M635 540V600" class="edge"/>
+  <path d="M160 510V645H385" class="edge"/>
+  <path d="M1120 510V645H895" class="edge"/>
+  <rect x="385" y="600" width="510" height="95" rx="14" class="out"/>
+  <text x="640" y="636" text-anchor="middle" class="head">最终分数 S_A = r + α_eff × t</text>
+  <text x="640" y="670" text-anchor="middle">按验证集规则重新确定决策阈值</text>
+  <text x="40" y="748" class="note">新增可训练参数 0；额外主干前向 0。空间重合是互证信号，不是攻击概率。</text>
+  <text x="40" y="776" class="note">关键对照：与验证集选好的固定 α 比较，排除“只是降低 CLTC 权重”。</text>
+</svg>

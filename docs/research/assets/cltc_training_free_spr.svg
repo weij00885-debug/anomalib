@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="865" viewBox="0 0 1280 865">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#475569"/></marker>
+    <style>text{font-family:'Microsoft YaHei','Noto Sans CJK SC',sans-serif;fill:#172b44;font-size:21px}.title{font-size:30px;font-weight:700}.sub{font-size:18px;fill:#54677c}.head{font-weight:700}.base{fill:#f1f5f9;stroke:#94a3b8;stroke-width:2}.new{fill:#e0f2fe;stroke:#0284c7;stroke-width:2.5}.out{fill:#ecfdf5;stroke:#059669;stroke-width:2}.edge{fill:none;stroke:#475569;stroke-width:2.3;marker-end:url(#arrow)}.note{font-size:17px;fill:#54677c}</style>
+  </defs>
+  <rect width="1280" height="865" fill="white"/>
+  <text x="40" y="44" class="title">方案 C · SPR 同区域扰动复核</text>
+  <text x="40" y="76" class="sub">外置推理模块：同一个 checkpoint 顺序处理多个视图，所有视图使用原图确定的区域</text>
+  <rect x="80" y="115" width="420" height="100" rx="14" class="base"/>
+  <text x="290" y="154" text-anchor="middle" class="head">原始 RGB 图像</text>
+  <text x="290" y="188" text-anchor="middle">原预处理 → 冻结 LCF＋CLTC</text>
+  <path d="M500 165H765" class="edge"/>
+  <text x="630" y="140" text-anchor="middle" class="sub">生成 3 个轻微视图</text>
+  <rect x="765" y="115" width="430" height="100" rx="14" class="new"/>
+  <text x="980" y="151" text-anchor="middle" class="head">翻转 / gamma 0.9 / gamma 1.1</text>
+  <text x="980" y="185" text-anchor="middle">分别走相同预处理和同一模型</text>
+  <path d="M290 215V295" class="edge"/>
+  <path d="M980 215V295" class="edge"/>
+  <rect x="80" y="295" width="420" height="95" rx="14" class="base"/>
+  <text x="290" y="332" text-anchor="middle" class="head">原生两路图 R_0、U_0</text>
+  <text x="290" y="365" text-anchor="middle">另按旧流程计算标量 S0</text>
+  <rect x="765" y="295" width="430" height="95" rx="14" class="new"/>
+  <text x="980" y="332" text-anchor="middle" class="head">各视图 R_j、U_j → 逆对齐</text>
+  <text x="980" y="365" text-anchor="middle">翻转图回到原图坐标</text>
+  <path d="M290 390V470" class="edge"/>
+  <path d="M980 390V470" class="edge"/>
+  <rect x="80" y="470" width="420" height="100" rx="14" class="new"/>
+  <text x="290" y="507" text-anchor="middle" class="head">仅原图选区 Ω</text>
+  <text x="290" y="540" text-anchor="middle">原生融合图的 top 10% patch</text>
+  <path d="M500 520H765" class="edge"/>
+  <text x="630" y="495" text-anchor="middle" class="sub">固定 Ω，传给所有视图</text>
+  <rect x="765" y="470" width="430" height="100" rx="14" class="new"/>
+  <text x="980" y="507" text-anchor="middle" class="head">同一区域得到 v_0…v_3</text>
+  <text x="980" y="540" text-anchor="middle">中位数 m ＋ 波动 d → 复核证据 e</text>
+  <path d="M80 342H35V697H320" class="edge"/>
+  <text x="95" y="673" class="sub">保留基础分数 S0</text>
+  <path d="M980 570V615H900V645" class="edge"/>
+  <rect x="320" y="645" width="670" height="110" rx="14" class="out"/>
+  <text x="655" y="682" text-anchor="middle" class="head">S_C = (1 − β) × S0 + β × q_0 × e / q_e</text>
+  <text x="655" y="718" text-anchor="middle">验证真人校准尺度，完整分数重新选验证阈值</text>
+  <text x="40" y="807" class="note">新增可训练参数 0；完整版本共 4 次网络前向，建议顺序执行以控制峰值显存。</text>
+  <text x="40" y="835" class="note">关键对照：相同视图、相同计算量的普通 TTA；重复出现的热区不等同于已确认的攻击区域。</text>
+</svg>

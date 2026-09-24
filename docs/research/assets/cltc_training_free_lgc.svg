@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="830" viewBox="0 0 1280 830">
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#475569"/></marker>
+    <style>text{font-family:'Microsoft YaHei','Noto Sans CJK SC',sans-serif;fill:#172b44;font-size:21px}.title{font-size:30px;font-weight:700}.sub{font-size:18px;fill:#54677c}.head{font-weight:700}.base{fill:#f1f5f9;stroke:#94a3b8;stroke-width:2}.new{fill:#e0f2fe;stroke:#0284c7;stroke-width:2.5}.out{fill:#ecfdf5;stroke:#059669;stroke-width:2}.edge{fill:none;stroke:#475569;stroke-width:2.3;marker-end:url(#arrow)}.note{font-size:17px;fill:#54677c}</style>
+  </defs>
+  <rect width="1280" height="830" fill="white"/>
+  <text x="40" y="44" class="title">方案 B · LGC 三层几何闭环</text>
+  <text x="40" y="76" class="sub">用两条“预测关系”与一条“观测关系”组成闭环；网络权重全部冻结</text>
+  <rect x="45" y="120" width="410" height="100" rx="14" class="base"/>
+  <text x="250" y="159" text-anchor="middle" class="head">冻结 DINO 原始特征 F0…F7</text>
+  <text x="250" y="193" text-anchor="middle">去掉 CLS / register，只取 patch</text>
+  <path d="M455 170H800" class="edge"/>
+  <text x="625" y="145" text-anchor="middle" class="sub">LCF → detach → 已训练 head</text>
+  <rect x="800" y="120" width="430" height="100" rx="14" class="base"/>
+  <text x="1015" y="159" text-anchor="middle" class="head">CLTC 预测轨迹 T_hat</text>
+  <text x="1015" y="193" text-anchor="middle">每个 patch 共 7 段预测距离</text>
+  <path d="M250 220V295" class="edge"/>
+  <path d="M1015 220V295" class="edge"/>
+  <rect x="45" y="295" width="440" height="105" rx="14" class="new"/>
+  <text x="265" y="332" text-anchor="middle" class="head">新增：6 条隔层观测</text>
+  <text x="265" y="366" text-anchor="middle">c_i = cosine(F_i, F_(i+2))</text>
+  <rect x="775" y="295" width="455" height="105" rx="14" class="new"/>
+  <text x="1002" y="332" text-anchor="middle" class="head">新增：相邻预测转余弦</text>
+  <text x="1002" y="366" text-anchor="middle">a,b = clip(1 − T_hat, −1, 1)</text>
+  <path d="M265 400V440H510V470" class="edge"/>
+  <path d="M1002 400V440H790V470" class="edge"/>
+  <rect x="375" y="470" width="530" height="120" rx="14" class="new"/>
+  <text x="640" y="506" text-anchor="middle" class="head">逐 patch 构造 6 个三层 Gram 矩阵</text>
+  <text x="640" y="541" text-anchor="middle">det = 1 + 2abc − a² − b² − c²</text>
+  <text x="640" y="572" text-anchor="middle">负行列式超出容差 → 闭环违反图 V</text>
+  <rect x="45" y="490" width="265" height="80" rx="12" class="base"/>
+  <text x="177" y="522" text-anchor="middle">原重建＋轨迹分数</text>
+  <text x="177" y="550" text-anchor="middle" class="head">S0 保持原算法</text>
+  <path d="M310 530H345V687H395" class="edge"/>
+  <path d="M640 590V640" class="edge"/>
+  <rect x="395" y="640" width="560" height="100" rx="14" class="out"/>
+  <text x="675" y="677" text-anchor="middle" class="head">g = P(V)；S_B = S0 + β × g / q_g</text>
+  <text x="675" y="712" text-anchor="middle">q_g 用验证真人估计，退化尺度时停用旁路</text>
+  <text x="40" y="785" class="note">新增可训练参数 0；额外主干前向 0。检验预测与观测的相容性，不声称攻击违反物理定律。</text>
+  <text x="40" y="813" class="note">关键对照：全部换成真实关系时，应得到半正定矩阵；收益还需超过原误差 max / RMS。</text>
+</svg>
