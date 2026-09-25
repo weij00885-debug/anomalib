@@ -2,7 +2,9 @@
 
 日期：2026-09-24。本文基于当前仓库代码和已有实验配置编写。
 
-交付范围：研究方案、接入位置、架构图、数学定义、消融设计和实现清单。三个候选模块尚未实现，也没有测得性能提升。模块名称是本文的工作命名，不代表已经发表的方法。
+初稿交付范围：研究方案、接入位置、架构图、数学定义、消融设计和实现清单。模块名称是本文的工作命名，不代表已经发表的方法。
+
+后续实现更新：C（SPR）已接入，四个独立评估脚本及命令见 [LCF-CLTC-SPR/README.md](../../LCF-CLTC-SPR/README.md)。本轮只比较 C 与已保存的 LCF＋CLTC 分数；A、B、VEC 和普通 TTA 对照仍未实施，尚未测得四库效果。
 
 **我的建议：先试 A；想把老师说的“思维链”作为论文主线，选 C＋第 6 节的证据链；愿意承担更高研究风险、希望更紧密围绕 CLTC 展开，选 B。** 三个方案是供你选择的替代方向，第一轮每次只接一个。
 
@@ -466,14 +468,14 @@ alpha 先固定为该 checkpoint 运行的值。若同时重选 alpha，要给�
 
 ## 9. 后续实际编码的文件落点
 
-以下文件名和接口是拟议设计，**目前不能把它们当作已有脚本执行**。本次只交付方案文档与图。
+以下表格保留初稿的完整设计。实际已落地的是 `predict_evidence()`、`components/perturbation_recheck.py` 和 `LCF-CLTC-SPR/` 下四份 `eval_*_lcf_cltc_spr.py`；其余拟议接口尚不可执行。C 的实现复用旧数据集的抗锯齿缩放，再对已缩放、尚未标准化的 RGB 构造视图，以匹配旧分数的预处理。
 
 |位置|建议新增职责|
 |---|---|
 |`torch_model.py`|新增仅推理的 evidence 输出接口；保留旧 `forward()` 返回结构；同一次前向暴露原生 R/U、T/T_hat，按需计算隔层余弦|
 |`components/spatial_corroboration.py`，拟新增|A 的分数 top-k、机会参照、rho 和动态 alpha|
 |`components/layer_geometric_closure.py`，拟新增|B 的三层 Gram 行列式、数值容差和闭环图|
-|`components/perturbation_recheck.py`，拟新增|C 的 RGB 变换、逆对齐、固定 ROI 和稳健聚合|
+|`components/perturbation_recheck.py`，已实现|固定 ROI 和稳健聚合；RGB 变换与逆对齐在独立评估 runner 中执行|
 |`LCF-CLTC/evaluate_training_free.py`，拟新增|按已存 config/checkpoint/manifest 评估；保存新输出到新目录|
 |`LCF-CLTC/evidence_chain.py`，拟新增|VEC 顺序控制、复核路由、结构化证据记录|
 
@@ -514,4 +516,4 @@ alpha 先固定为该 checkpoint 运行的值。若同时重选 alpha，要给�
 
 已有研究文档中的 SLR、RCNC、遮挡重训练方向不作为这次三个候选。此次重新从实际已完成的 LCF＋CLTC 架构出发，保持“加载现有模型后即可评估”的限制。
 
-交付检查包括：本地链接与 SVG 结构检查、三层闭环数学示例核算、图文接入位置与当前源码对照；四张 SVG 已导出 PNG 并逐张查看文字和连线。没有执行 GPU 实验、没有修改现有训练脚本，也没有对任何方案的 AUROC 做效果承诺。
+初稿检查包括：本地链接与 SVG 结构检查、三层闭环数学示例核算、图文接入位置与当前源码对照；四张 SVG 已导出 PNG 并逐张查看文字和连线。后续 C 实现及离线验证见评估脚本目录和 `tests/unit/models/image/dinomaly/test_spr.py`。没有执行四库 GPU 实验，也没有对任何方案的 AUROC 做效果承诺。

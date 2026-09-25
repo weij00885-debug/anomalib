@@ -441,6 +441,42 @@ class DinomalyModel(nn.Module):
         _, scores = self._combine_predictions(reconstruction_map, prediction, target, image_size)
         return scores
 
+    @torch.no_grad()
+    def predict_evidence(self, batch: torch.Tensor) -> dict[str, torch.Tensor]:
+        """Return legacy scores and native patch maps from one encoder/decoder pass.
+
+        Args:
+            batch: Preprocessed images with shape ``[B, 3, H, W]``.
+
+        Returns:
+            ``reconstruction``, ``trajectory`` and ``fused`` image scores plus
+            ``reconstruction_patch_map`` and ``trajectory_patch_map`` of shape
+            ``[B, 1, H/patch_size, W/patch_size]``. Maps are FP32, before resizing
+            and smoothing. Scores use the unchanged legacy pooling pipeline.
+
+        Raises:
+            RuntimeError: If the model is in training mode or CLTC is disabled.
+        """
+        if self.training or self.trajectory_head is None:
+            msg = "predict_evidence requires eval mode and an enabled CLTC head."
+            raise RuntimeError(msg)
+        batch = batch.to(dtype=next(self.encoder.parameters()).dtype)
+        en, de, prediction, target = self._get_outputs(batch)
+        if prediction is None or target is None:
+            msg = "The enabled CLTC head did not produce trajectory evidence."
+            raise RuntimeError(msg)
+        image_size = (batch.shape[2], batch.shape[3])
+        reconstruction_map, _ = self.calculate_anomaly_maps(en, de, out_size=image_size)
+        _, scores = self._combine_predictions(reconstruction_map, prediction, target, image_size)
+        patch_size = en[0].shape[-2:]
+        reconstruction_patch_map, _ = self.calculate_anomaly_maps(en, de, out_size=tuple(patch_size))
+        trajectory_patch_map = (prediction - target).abs().mean(-1).reshape(-1, 1, *patch_size)
+        return {
+            **scores,
+            "reconstruction_patch_map": reconstruction_patch_map,
+            "trajectory_patch_map": trajectory_patch_map,
+        }
+
     @staticmethod
     def calculate_anomaly_maps(
         source_feature_maps: list[torch.Tensor],

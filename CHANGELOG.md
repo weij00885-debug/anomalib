@@ -9,6 +9,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 
 - Experimental opt-in detached CLTC trajectory head for Dinomaly, with an OULU-NPU folder experiment script and branch-score exports.
+- Experimental training-free same-region perturbation recheck (SPR) for saved LCF+CLTC checkpoints, with native evidence-map exports and four independent dataset evaluation scripts comparing against archived baseline scores.
 
 ### Removed
 
