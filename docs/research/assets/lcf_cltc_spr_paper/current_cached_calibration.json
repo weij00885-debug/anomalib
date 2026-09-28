@@ -1,0 +1,161 @@
+{
+  "additional_network_forwards": 0,
+  "source_run": "results/spr_roi_sweep_20260926_140600_193717",
+  "rho": 0.3,
+  "beta": 1.0,
+  "region_mean_dtype": "float32",
+  "calibration": {
+    "oulu": {
+      "original_lcf_cltc": {
+        "q0": 1.9496013160376837,
+        "qe": 1.9496013160376837,
+        "threshold": 1.5931082303060533,
+        "policy": "validation_f1"
+      },
+      "original_region": {
+        "q0": 1.9496013160376837,
+        "qe": 1.3507124423980712,
+        "threshold": 1.7507166390776638,
+        "policy": "validation_f1"
+      },
+      "tta_mean_4views": {
+        "q0": 1.9496013160376837,
+        "qe": 1.935210779309273,
+        "threshold": 1.6014260947704315,
+        "policy": "validation_f1"
+      },
+      "mean_no_penalty": {
+        "q0": 1.9496013160376837,
+        "qe": 1.3287569761276246,
+        "threshold": 1.7618073058065595,
+        "policy": "validation_f1"
+      },
+      "median_no_penalty": {
+        "q0": 1.9496013160376837,
+        "qe": 1.3481528460979462,
+        "threshold": 1.7427678367331871,
+        "policy": "validation_f1"
+      },
+      "lcf_cltc_spr": {
+        "q0": 1.9496013160376837,
+        "qe": 1.346263611316681,
+        "threshold": 1.7479152114772727,
+        "policy": "validation_f1"
+      }
+    },
+    "lcc": {
+      "original_lcf_cltc": {
+        "q0": 1.517522625571829,
+        "qe": 1.517522625571829,
+        "threshold": 1.3124808491738815,
+        "policy": "validation_hter"
+      },
+      "original_region": {
+        "q0": 1.517522625571829,
+        "qe": 1.0298320055007935,
+        "threshold": 1.48372728170996,
+        "policy": "validation_hter"
+      },
+      "tta_mean_4views": {
+        "q0": 1.517522625571829,
+        "qe": 1.5151852518320084,
+        "threshold": 1.2900994420051575,
+        "policy": "validation_hter"
+      },
+      "mean_no_penalty": {
+        "q0": 1.517522625571829,
+        "qe": 1.0211621820926666,
+        "threshold": 1.4976158051352635,
+        "policy": "validation_hter"
+      },
+      "median_no_penalty": {
+        "q0": 1.517522625571829,
+        "qe": 1.0291802883148193,
+        "threshold": 1.4844574893806495,
+        "policy": "validation_hter"
+      },
+      "lcf_cltc_spr": {
+        "q0": 1.517522625571829,
+        "qe": 1.0272431373596191,
+        "threshold": 1.4858668465593419,
+        "policy": "validation_hter"
+      }
+    },
+    "nuaa": {
+      "original_lcf_cltc": {
+        "q0": 1.9703804337689361,
+        "qe": 1.9703804337689361,
+        "threshold": 1.9487128349079528,
+        "policy": "validation_hter"
+      },
+      "original_region": {
+        "q0": 1.9703804337689361,
+        "qe": 1.3517698347568512,
+        "threshold": 2.0373399822925014,
+        "policy": "validation_hter"
+      },
+      "tta_mean_4views": {
+        "q0": 1.9703804337689361,
+        "qe": 2.046762853860855,
+        "threshold": 1.9664825201034546,
+        "policy": "validation_hter"
+      },
+      "mean_no_penalty": {
+        "q0": 1.9703804337689361,
+        "qe": 1.3892361521720886,
+        "threshold": 2.0062204113262134,
+        "policy": "validation_hter"
+      },
+      "median_no_penalty": {
+        "q0": 1.9703804337689361,
+        "qe": 1.3558520078659058,
+        "threshold": 2.0362997707797836,
+        "policy": "validation_hter"
+      },
+      "lcf_cltc_spr": {
+        "q0": 1.9703804337689361,
+        "qe": 1.3521332442760468,
+        "threshold": 2.038330148575824,
+        "policy": "validation_hter"
+      }
+    },
+    "replay": {
+      "original_lcf_cltc": {
+        "q0": 1.9402751757349839,
+        "qe": 1.9402751757349839,
+        "threshold": 2.029927656915426,
+        "policy": "validation_hter"
+      },
+      "original_region": {
+        "q0": 1.9402751757349839,
+        "qe": 1.3606270790100097,
+        "threshold": 1.9898402049445194,
+        "policy": "validation_hter"
+      },
+      "tta_mean_4views": {
+        "q0": 1.9402751757349839,
+        "qe": 2.156720447540283,
+        "threshold": 2.1595422625541687,
+        "policy": "validation_hter"
+      },
+      "mean_no_penalty": {
+        "q0": 1.9402751757349839,
+        "qe": 1.4955873250961302,
+        "threshold": 1.953644441554697,
+        "policy": "validation_hter"
+      },
+      "median_no_penalty": {
+        "q0": 1.9402751757349839,
+        "qe": 1.3776637077331542,
+        "threshold": 1.9760199367908178,
+        "policy": "validation_hter"
+      },
+      "lcf_cltc_spr": {
+        "q0": 1.9402751757349839,
+        "qe": 1.3598000288009644,
+        "threshold": 1.9944282544347316,
+        "policy": "validation_hter"
+      }
+    }
+  }
+}

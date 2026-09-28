@@ -7,6 +7,12 @@
 OULU-NPU 运行命令、正常开发集尺度拟合及三支路评分比较，见
 [CLTC 实验说明](../../../../../docs/research/dinomaly_cltc_oulu_experiment.md)。
 
+当前 LCF＋CLTC＋SPR 人脸防伪研究的架构图、完整方法、评分公式和四库实验，见
+[论文式研究稿](../../../../../docs/research/dinomaly_lcf_cltc_spr_paper.md)与
+[完整数据附录](../../../../../docs/research/dinomaly_lcf_cltc_spr_paper_data.md)。
+当前复核设置为 ROI=30%、β=1.0。研究稿主表采用 2026-09-28 用户日志摘录的四库四阶段结果，原值保留、统计口径与逐行协议待核对；历史自定义帧级实验及消融单独标注，不与新数据混算增益。本次文档同步未重新训练或推理。
+该研究扩展与下文介绍的基础 Dinomaly 默认配置不同。
+
 ## 目录
 
 - [1. 模型简介](#1-模型简介)
@@ -216,8 +222,8 @@ def get_encoder_decoder_outputs(self, x: torch.Tensor):
     # 2. 过编码器，提取 8 层特征
     features = self.encoder(x)
     encoder_features = [features[f"blocks.{i}"] for i in self.target_layers]
-    # 每个特征 shape: [B, 785, 768]
-    # 785 = 1 class token + 4 register tokens + 784 patch tokens
+    # 每个特征 shape: [B, 789, 768]
+    # 789 = 1 class token + 4 register tokens + 784 patch tokens
 
     # 3. 处理 class token
     if self.remove_class_token:

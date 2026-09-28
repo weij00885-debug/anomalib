@@ -1,0 +1,17 @@
+dataset,stage,reported_method,AUROC,Accuracy,F1Score,Precision,Recall,HTER
+lcc,0,dinomaly,0.8243,0.8562,0.9205,0.9777,0.8721,0.2914
+lcc,1,dinomaly+laf,0.8503,0.8701,0.9291,0.9824,0.8814,0.2894
+lcc,2,dinomaly+laf+ctlc,0.8377,0.8299,0.9048,0.9858,0.8361,0.2575
+lcc,3,dinomaly+laf+ctlc+spr,0.8713,0.7926,0.8807,0.9916,0.7922,0.2012
+oulu,0,dinomaly,0.809,0.7362,0.8075,0.9163,0.7148,0.2607
+oulu,1,dinomaly+laf,0.8726,0.8257,0.7871,0.8395,0.7608,0.1884
+oulu,2,dinomaly+laf+ctlc,0.8747,0.8902,0.9346,0.8923,0.9812,0.2461
+oulu,3,dinomaly+laf+ctlc+spr,0.9235,0.9208,0.9517,0.9282,0.9765,0.1627
+nuaa,0,dinomaly,0.9328,0.7036,0.8084,0.9893,0.6835,0.1981
+nuaa,1,dinomaly+laf,0.9675,0.9354,0.9462,0.9471,0.9553,0.0925
+nuaa,2,dinomaly+laf+ctlc,0.9804,0.9397,0.9638,0.9884,0.9403,0.0585
+nuaa,3,dinomaly+laf+ctlc+spr,0.9984,0.9923,0.9957,0.9964,0.9950,0.0177
+replay,0,dinomaly,0.9367,0.8352,0.8884,0.9612,0.8328,0.1401
+replay,1,dinomaly+laf,0.9542,0.7220,0.8182,0.9777,0.7126,0.1385
+replay,2,dinomaly+laf+ctlc,0.9888,0.9845,0.9870,0.9876,0.9864,0.0171
+replay,3,dinomaly+laf+ctlc+spr,0.9992,0.9956,0.9976,0.9978,0.9974,0.0144

@@ -1,0 +1,975 @@
+[
+  {
+    "run": "lcc_lcf_cltc_10k_lambda05_alpha025_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 1,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 10000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.5,
+      "cltc_score_weight": 0.25,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_10k_lambda05_alpha025_s42",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.6288618068984124,
+        "image_Accuracy": 0.7811941365749017,
+        "image_F1Score": 0.874897792313982,
+        "image_Precision": 0.9782857142857143,
+        "image_Recall": 0.7912738029210575,
+        "image_HTER": 0.361119855296228
+      },
+      "manifest_sha256": {
+        "train": "e9ae1060602401e6c88fea3765dbe64753a857b0a47ee63a255d4519d41b7d94",
+        "validation": "56dc07e5db4ced23b2e93606505ebe39e9fe994fcc616f749c103dc9154ad3f4",
+        "test": "9ad210f4ad8774ba057dd335559195d20ccd3e7032863dfb051e606d5b1deabb"
+      },
+      "score_scales": [
+        0.22815574705600739,
+        0.03378249332308769
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_final_5k_b2_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 2,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 0.5,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_final_5k_b2_s42",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.837747897648064,
+        "image_Accuracy": 0.8299964247407937,
+        "image_F1Score": 0.9048714614384316,
+        "image_Precision": 0.9858326068003488,
+        "image_Recall": 0.8361989277130708,
+        "image_HTER": 0.25757621181914025
+      },
+      "manifest_sha256": {
+        "train": "e9ae1060602401e6c88fea3765dbe64753a857b0a47ee63a255d4519d41b7d94",
+        "validation": "56dc07e5db4ced23b2e93606505ebe39e9fe994fcc616f749c103dc9154ad3f4",
+        "test": "9ad210f4ad8774ba057dd335559195d20ccd3e7032863dfb051e606d5b1deabb"
+      },
+      "score_scales": [
+        0.06767373532056808,
+        0.02903709188103676
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_final_5k_b2_s43_retry",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 2,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 43,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 0.5,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_final_5k_b2_s43_retry",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.7740202765161168,
+        "image_Accuracy": 0.7425813371469432,
+        "image_F1Score": 0.8482293423271501,
+        "image_Precision": 0.986516303015445,
+        "image_Recall": 0.7439452763911999,
+        "image_HTER": 0.27667601045304874
+      },
+      "manifest_sha256": {
+        "train": "4cf9e369fc30c68ed09249ef3e66df209180fb6ef447943a0302cb9f4ffb0409",
+        "validation": "f90616b0d6c8777a1bcf1859984921c71f9c81c3768679bdec34a3c9a0542cdd",
+        "test": "08e4ac0a2dbb6d8321702bb9b8263bcf94f488b772288dd07d62538e8463b0dc"
+      },
+      "score_scales": [
+        0.056953608989715576,
+        0.03170456364750862
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_final_5k_b2_s44",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 2,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 44,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 0.5,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_final_5k_b2_s44",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.6752764411666241,
+        "image_Accuracy": 0.7077225598855917,
+        "image_F1Score": 0.8251523901187039,
+        "image_Precision": 0.9786910197869102,
+        "image_Recall": 0.7132556849694953,
+        "image_HTER": 0.3703991845422794
+      },
+      "manifest_sha256": {
+        "train": "525f03e887faf9f2b20a997c840e2ad60544e104a7d400dd081636054c443042",
+        "validation": "ea99e85dbb86d47c70b0d859cd626a4f2ed43b14394f21b413d5286a2d0853ba",
+        "test": "0bfb2c55abdc4a6b1dae427742427fa41ab280dcc0ca4afe03ed5fdb27f4ed2d"
+      },
+      "score_scales": [
+        0.10813751816749573,
+        0.034599967300891876
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_final_5k_b2_s45",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 2,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 45,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 0.5,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_final_5k_b2_s45",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.7722934248724598,
+        "image_Accuracy": 0.6478369681801931,
+        "image_F1Score": 0.779592750055941,
+        "image_Precision": 0.9872485123264381,
+        "image_Recall": 0.6441116657422814,
+        "image_HTER": 0.2995657887504809
+      },
+      "manifest_sha256": {
+        "train": "32f32fb8f85f1d13dc2f492799a001c61a7ab60fb24e711c1e651c755b20f418",
+        "validation": "6dabf0e665bbcec1fe58bc5abb2dd1f368e26764e71b70ef7f2a1a6dd5d9e92b",
+        "test": "5ee5721e875535f82e479981b38745a6451388f93b9b032ad904f7ad4c025b21"
+      },
+      "score_scales": [
+        0.05045153200626373,
+        0.030261896550655365
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_final_5k_b2_s46",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 2,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 46,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 0.5,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_final_5k_b2_s46",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.7322180749801381,
+        "image_Accuracy": 0.8083661065427243,
+        "image_F1Score": 0.8921529175050302,
+        "image_Precision": 0.9785919223129552,
+        "image_Recall": 0.819744869661675,
+        "image_HTER": 0.3522897273313247
+      },
+      "manifest_sha256": {
+        "train": "b8ce03cfda7563d5116d852c47f6ea9af926350c416a67f87b6f3ca2b4e78be5",
+        "validation": "6a737d75fb8f7613086b9928f8ee45bde69668b2836d229d1fbe3161517d79ac",
+        "test": "3f99b52a1ca97d6410a237ad42a740680f2e0a13b9618a32324ab54fbf18335a"
+      },
+      "score_scales": [
+        0.09734170138835907,
+        0.03433273360133171
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_final_5k_b3_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 3,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 0.5,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_final_5k_b3_s42",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.7510195719846302,
+        "image_Accuracy": 0.6378262424025742,
+        "image_F1Score": 0.7720522052205221,
+        "image_Precision": 0.9862029318769762,
+        "image_Recall": 0.6343131817341467,
+        "image_HTER": 0.31257313886265636
+      },
+      "manifest_sha256": {
+        "train": "e9ae1060602401e6c88fea3765dbe64753a857b0a47ee63a255d4519d41b7d94",
+        "validation": "56dc07e5db4ced23b2e93606505ebe39e9fe994fcc616f749c103dc9154ad3f4",
+        "test": "9ad210f4ad8774ba057dd335559195d20ccd3e7032863dfb051e606d5b1deabb"
+      },
+      "score_scales": [
+        0.08416581898927689,
+        0.029221387580037117
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_final_lambda01_alpha05_5k_b2_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 2,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 0.5,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_final_lambda01_alpha05_5k_b2_s42",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.837747897648064,
+        "image_Accuracy": 0.8299964247407937,
+        "image_F1Score": 0.9048714614384316,
+        "image_Precision": 0.9858326068003488,
+        "image_Recall": 0.8361989277130708,
+        "image_HTER": 0.25757621181914025
+      },
+      "manifest_sha256": {
+        "train": "e9ae1060602401e6c88fea3765dbe64753a857b0a47ee63a255d4519d41b7d94",
+        "validation": "56dc07e5db4ced23b2e93606505ebe39e9fe994fcc616f749c103dc9154ad3f4",
+        "test": "9ad210f4ad8774ba057dd335559195d20ccd3e7032863dfb051e606d5b1deabb"
+      },
+      "score_scales": [
+        0.06767373532056808,
+        0.02903709188103676
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_fp32_5k_alpha05_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 1,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 0.5,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_fp32_5k_alpha05_s42",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.8101332613811814,
+        "image_Accuracy": 0.7340007150518413,
+        "image_F1Score": 0.8420382165605096,
+        "image_Precision": 0.9887808526551982,
+        "image_Recall": 0.733222407099279,
+        "image_HTER": 0.2550104180719821
+      },
+      "manifest_sha256": {
+        "train": "e9ae1060602401e6c88fea3765dbe64753a857b0a47ee63a255d4519d41b7d94",
+        "validation": "56dc07e5db4ced23b2e93606505ebe39e9fe994fcc616f749c103dc9154ad3f4",
+        "test": "9ad210f4ad8774ba057dd335559195d20ccd3e7032863dfb051e606d5b1deabb"
+      },
+      "score_scales": [
+        0.07017907500267029,
+        0.04122062772512436
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_lambda05_alpha025_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 1,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.5,
+      "cltc_score_weight": 0.25,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_lambda05_alpha025_s42",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.804713865279589,
+        "image_Accuracy": 0.778691455130497,
+        "image_F1Score": 0.8725025746652935,
+        "image_Precision": 0.9848872355266217,
+        "image_Recall": 0.7831392124237382,
+        "image_HTER": 0.28410606946380657
+      },
+      "manifest_sha256": {
+        "train": "e9ae1060602401e6c88fea3765dbe64753a857b0a47ee63a255d4519d41b7d94",
+        "validation": "56dc07e5db4ced23b2e93606505ebe39e9fe994fcc616f749c103dc9154ad3f4",
+        "test": "9ad210f4ad8774ba057dd335559195d20ccd3e7032863dfb051e606d5b1deabb"
+      },
+      "score_scales": [
+        0.07017907500267029,
+        0.041202887892723083
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_lambda05_alpha05_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 1,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.5,
+      "cltc_score_weight": 0.5,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_lambda05_alpha05_s42",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.8101047803210865,
+        "image_Accuracy": 0.7332856632105827,
+        "image_F1Score": 0.8415463041631266,
+        "image_Precision": 0.9887696531070627,
+        "image_Recall": 0.7324828988722499,
+        "image_HTER": 0.2553801721854967
+      },
+      "manifest_sha256": {
+        "train": "e9ae1060602401e6c88fea3765dbe64753a857b0a47ee63a255d4519d41b7d94",
+        "validation": "56dc07e5db4ced23b2e93606505ebe39e9fe994fcc616f749c103dc9154ad3f4",
+        "test": "9ad210f4ad8774ba057dd335559195d20ccd3e7032863dfb051e606d5b1deabb"
+      },
+      "score_scales": [
+        0.07017907500267029,
+        0.041202887892723083
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_legacy_fp32_20k_lambda03_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 1,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.3,
+      "cltc_score_weight": 1.0,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_legacy_fp32_20k_lambda03_s42",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.8111605782154866,
+        "image_Accuracy": 0.7314980336074366,
+        "image_F1Score": 0.8403825717321998,
+        "image_Precision": 0.9882529367658085,
+        "image_Recall": 0.7310038824181919,
+        "image_HTER": 0.2615250858179311
+      },
+      "manifest_sha256": {
+        "train": "e9ae1060602401e6c88fea3765dbe64753a857b0a47ee63a255d4519d41b7d94",
+        "validation": "56dc07e5db4ced23b2e93606505ebe39e9fe994fcc616f749c103dc9154ad3f4",
+        "test": "9ad210f4ad8774ba057dd335559195d20ccd3e7032863dfb051e606d5b1deabb"
+      },
+      "score_scales": [
+        0.07017907500267029,
+        0.04120646417140961
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_legacy_fp32_20k_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 1,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 20000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 1.0,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_legacy_fp32_20k_s42",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.7809496684704671,
+        "image_Accuracy": 0.7420450482659993,
+        "image_F1Score": 0.848185165702262,
+        "image_Precision": 0.984130859375,
+        "image_Recall": 0.7452394157885006,
+        "image_HTER": 0.30305596778142535
+      },
+      "manifest_sha256": {
+        "train": "e9ae1060602401e6c88fea3765dbe64753a857b0a47ee63a255d4519d41b7d94",
+        "validation": "56dc07e5db4ced23b2e93606505ebe39e9fe994fcc616f749c103dc9154ad3f4",
+        "test": "9ad210f4ad8774ba057dd335559195d20ccd3e7032863dfb051e606d5b1deabb"
+      },
+      "score_scales": [
+        0.08182870596647263,
+        0.03084578365087509
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "lcc_lcf_cltc_legacy_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_large_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 2,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 1.0,
+      "accelerator": "gpu",
+      "results_dir": "results/lcc_lcf_cltc_legacy_s42",
+      "dataset": "LCC_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.8259557394332769,
+        "image_Accuracy": 0.8117626027887022,
+        "image_F1Score": 0.893410264196781,
+        "image_Precision": 0.987248322147651,
+        "image_Recall": 0.8158624514697727,
+        "image_HTER": 0.24612282831916776
+      },
+      "manifest_sha256": {
+        "train": "e9ae1060602401e6c88fea3765dbe64753a857b0a47ee63a255d4519d41b7d94",
+        "validation": "56dc07e5db4ced23b2e93606505ebe39e9fe994fcc616f749c103dc9154ad3f4",
+        "test": "9ad210f4ad8774ba057dd335559195d20ccd3e7032863dfb051e606d5b1deabb"
+      },
+      "score_scales": [
+        0.06767373532056808,
+        0.02903709188103676
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "nuaa_lcf_cltc_legacy_fp32_20k_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_giant_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 1,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 20000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 1.0,
+      "accelerator": "gpu",
+      "results_dir": "results/nuaa_lcf_cltc_legacy_fp32_20k_s42",
+      "dataset": "NUAA_mtcnn_colors",
+      "protocol": "legacy_dedicated_normal_test_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.9840275606593814,
+        "image_Accuracy": 0.9437250996015937,
+        "image_F1Score": 0.9678276549302458,
+        "image_Precision": 0.9924094978590892,
+        "image_Recall": 0.9444341544730506,
+        "image_HTER": 0.05898292276347472
+      },
+      "manifest_sha256": {
+        "train": "827b24be721ebf2cf35ac468e1b81cb8dc490ce5df4749295c00c59c1b2deff1",
+        "validation": "f6438bd11a9c3810aae7822943ac0c9b4d05fb7963e07fb32622e8e719ce3c2d",
+        "test": "4caa9d1d20a4fdb12bdef0970a1d52d0f8e2b624d5e43c07b7520a46c7be9ac9"
+      },
+      "score_scales": [
+        0.05590798333287239,
+        0.02614019811153412
+      ],
+      "protocol": "legacy_dedicated_normal_test_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "oulu_lcf_cltc_legacy_fp32_20k_s42",
+    "config": {
+      "root": "/mnt/d/BaiduNetdiskDownload/OULU-NPU_organized",
+      "normal_dir": "train/normal",
+      "normal_test_dir": "test/normal",
+      "abnormal_dir": "test/abnormal",
+      "val_split_ratio": 0.2,
+      "encoder_name": "vit_giant_patch14_reg4_dinov2",
+      "target_layers": [
+        6,
+        10,
+        14,
+        18,
+        22,
+        26,
+        30,
+        34
+      ],
+      "decoder_depth": 8,
+      "fuse_mode": "half",
+      "bottleneck_dropout": 0.2,
+      "lcf_dropout": 0.0,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 1.0,
+      "image_size": 392,
+      "crop_size": null,
+      "remove_class_token": false,
+      "use_context_recentering": false,
+      "model_precision": "float32",
+      "train_batch_size": 1,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 20000,
+      "gradient_clip_val": 0.1,
+      "accelerator": "gpu",
+      "seed": 42,
+      "results_dir": "results/oulu_lcf_cltc_legacy_fp32_20k_s42",
+      "resume_ckpt": null,
+      "protocol": "legacy_lcf_from_test_20pct_frame_level_folder",
+      "checkpoint_selection": "last_fixed_step",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "calibration": "validation_normal_q95_scales_and_validation_f1_threshold",
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.8615265721450618,
+        "image_Accuracy": 0.8534722222222222,
+        "image_F1Score": 0.9137578680618,
+        "image_Precision": 0.8634327205314383,
+        "image_Recall": 0.9703125,
+        "image_HTER": 0.32178819444444445
+      },
+      "manifest_sha256": {
+        "train": "0785d9c30a4c2a978a19a7e2abaf79c226e74cdf867b23edb1191bda73ad1134",
+        "validation": "e6c72a850e5aed1aea7655b8e4bccdf71f80e703b02851b18a1f8793278b05dd",
+        "test": "a4df28158c31cbea31fa801e16833280db5949de2bd181d5a29104f47ad69859"
+      },
+      "protocol": "legacy_lcf_from_test_20pct_frame_level_folder",
+      "score_scales": [
+        0.08913733065128326,
+        0.029567254707217216
+      ],
+      "note": "Final LCF+CLTC fused score only. Matches the old LCF script's from_test split and metrics, but remains frame-level pooled attacks; not official OULU video/protocol metrics."
+    }
+  },
+  {
+    "run": "oulu_lcf_cltc_legacy_s42",
+    "config": {
+      "root": "/mnt/d/BaiduNetdiskDownload/OULU-NPU_organized",
+      "normal_dir": "train/normal",
+      "normal_test_dir": "test/normal",
+      "abnormal_dir": "test/abnormal",
+      "val_split_ratio": 0.2,
+      "encoder_name": "vit_giant_patch14_reg4_dinov2",
+      "target_layers": [
+        6,
+        10,
+        14,
+        18,
+        22,
+        26,
+        30,
+        34
+      ],
+      "decoder_depth": 8,
+      "fuse_mode": "half",
+      "bottleneck_dropout": 0.2,
+      "lcf_dropout": 0.0,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 1.0,
+      "image_size": 392,
+      "crop_size": null,
+      "remove_class_token": false,
+      "use_context_recentering": false,
+      "model_precision": "float16",
+      "train_batch_size": 1,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "gradient_clip_val": 0.1,
+      "accelerator": "gpu",
+      "seed": 42,
+      "results_dir": "results/oulu_lcf_cltc_legacy_s42",
+      "resume_ckpt": null,
+      "protocol": "legacy_lcf_from_test_20pct_frame_level_folder",
+      "checkpoint_selection": "last_fixed_step",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "calibration": "validation_normal_q95_scales_and_validation_f1_threshold",
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.874795283564815,
+        "image_Accuracy": 0.8902777777777777,
+        "image_F1Score": 0.9346783529022656,
+        "image_Precision": 0.8923271234606883,
+        "image_Recall": 0.98125,
+        "image_HTER": 0.24618055555555554
+      },
+      "manifest_sha256": {
+        "train": "0785d9c30a4c2a978a19a7e2abaf79c226e74cdf867b23edb1191bda73ad1134",
+        "validation": "e6c72a850e5aed1aea7655b8e4bccdf71f80e703b02851b18a1f8793278b05dd",
+        "test": "a4df28158c31cbea31fa801e16833280db5949de2bd181d5a29104f47ad69859"
+      },
+      "protocol": "legacy_lcf_from_test_20pct_frame_level_folder",
+      "score_scales": [
+        0.28198203444480896,
+        0.04887208715081215
+      ],
+      "note": "Final LCF+CLTC fused score only. Matches the old LCF script's from_test split and metrics, but remains frame-level pooled attacks; not official OULU video/protocol metrics."
+    }
+  },
+  {
+    "run": "replay_lcf_cltc_legacy_fp32_20k_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_giant_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 1,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 20000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 1.0,
+      "accelerator": "gpu",
+      "results_dir": "results/replay_lcf_cltc_legacy_fp32_20k_s42",
+      "dataset": "REPLAY_mtcnn_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.9988256778790227,
+        "image_Accuracy": 0.9945328031809145,
+        "image_F1Score": 0.9970422156493681,
+        "image_Precision": 0.9976681614349776,
+        "image_Recall": 0.9964170548190613,
+        "image_HTER": 0.016108653207209455
+      },
+      "manifest_sha256": {
+        "train": "a3b72b54d414b4806ed2eb68138a44c389b91e41bd0ca817b88227d1988d5f97",
+        "validation": "2d58b0059b098e321c846b2431a02a668ecbc30aff5ac450d7c9754f1681b3ca",
+        "test": "f49d8c519d06ca04e2e5cb56f0b0f12940e3307b8071b73f81371c5f445ff8b5"
+      },
+      "score_scales": [
+        0.04693065956234932,
+        0.024929698556661606
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  },
+  {
+    "run": "replay_lcf_cltc_legacy_s42",
+    "config": {
+      "data_root": "/mnt/c/Users/heqi/Desktop/wj/data",
+      "mode": "rgb",
+      "encoder_name": "vit_giant_patch14_reg4_dinov2",
+      "image_size": 392,
+      "model_precision": "float32",
+      "train_batch_size": 1,
+      "eval_batch_size": 1,
+      "num_workers": 4,
+      "max_steps": 5000,
+      "seed": 42,
+      "val_split_ratio": 0.2,
+      "normal_test_ratio": 0.2,
+      "cltc_hidden_dim": 128,
+      "cltc_loss_weight": 0.1,
+      "cltc_score_weight": 1.0,
+      "accelerator": "gpu",
+      "results_dir": "results/replay_lcf_cltc_legacy_s42",
+      "dataset": "REPLAY_mtcnn_colors",
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "use_lcf": true,
+      "use_cltc": true,
+      "cltc_detach": true,
+      "score_fusion": "after_pooling"
+    },
+    "report": {
+      "metrics": {
+        "image_AUROC": 0.9408616746401666,
+        "image_Accuracy": 0.9120278330019881,
+        "image_F1Score": 0.9510102407971215,
+        "image_Precision": 0.9804070762792467,
+        "image_Recall": 0.9233249731279112,
+        "image_HTER": 0.15177363678406203
+      },
+      "manifest_sha256": {
+        "train": "a3b72b54d414b4806ed2eb68138a44c389b91e41bd0ca817b88227d1988d5f97",
+        "validation": "2d58b0059b098e321c846b2431a02a668ecbc30aff5ac450d7c9754f1681b3ca",
+        "test": "f49d8c519d06ca04e2e5cb56f0b0f12940e3307b8071b73f81371c5f445ff8b5"
+      },
+      "score_scales": [
+        0.09903008490800858,
+        0.050598982721567154
+      ],
+      "protocol": "legacy_normal_holdout_from_test_val",
+      "note": "Final LCF+CLTC fused score only; split and metrics match the dataset's old LCF script."
+    }
+  }
+]

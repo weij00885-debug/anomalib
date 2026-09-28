@@ -1,0 +1,17 @@
+{
+  "source_type": "user_supplied_experiment_summary",
+  "source_date": "2026-09-28",
+  "source_description": "用户在本次对话提供的四数据集、四级模块配置、六项指标；用户确认从日志抄录，不清楚脚本统计方式；逐值原样转录。",
+  "dataset_names": {"lcc": "LCC-FASD", "oulu": "OULU-NPU", "nuaa": "NUAA", "replay": "Replay-Attack"},
+  "working_method_aliases": {"laf": "LCF", "ctlc": "CLTC"},
+  "alias_note": "按既有代码与上下文暂对应，不表示模型代码被改名。",
+  "metric_scale": "0-1",
+  "numeric_policy": "保留用户给出的精度，不使用旧实验的高精度小数补位，不改写用户值以满足公式。",
+  "validation_metrics_supplied": false,
+  "per_row_manifest_checkpoint_threshold_metadata_supplied": false,
+  "precision_recall_f1_aggregation": "unknown_user_confirmed_copied_from_logs",
+  "verification_note": "待核对原日志和评估脚本：正类、阈值、样本单位、binary/macro/weighted 与分折聚合方式；不自行重算替换原值。",
+  "scope": "文档最新主结果；旧 results 目录、checkpoint 和逐样本分数保持原样。",
+  "new_model_inference": false,
+  "new_training": false
+}
